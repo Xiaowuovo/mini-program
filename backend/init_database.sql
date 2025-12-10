@@ -9,6 +9,9 @@
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
+-- 禁用外键检查（允许删除有外键约束的表）
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- 创建数据库（如果不存在）
 CREATE DATABASE IF NOT EXISTS garden_db
 DEFAULT CHARACTER SET utf8mb4
@@ -342,6 +345,9 @@ INSERT INTO crops (name, scientific_name, type, total_growth_days, environment_r
  3, '["白粉病", "霜霉病", "蚜虫"]',
  '黄瓜需要充足的水分和营养',
  '需要搭架,及时采收嫩瓜');
+
+-- 重新启用外键检查
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- 插入番茄生长阶段规则
 INSERT INTO crop_growth_stages (crop_id, stage, stage_days, watering_frequency, watering_amount, fertilizing_frequency, fertilizer_type, weeding_frequency, pest_check_frequency, stage_tips) VALUES

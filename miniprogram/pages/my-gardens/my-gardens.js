@@ -177,12 +177,12 @@ Page({
   },
 
   /**
-   * 添加任务提醒
+   * 添加种植记录
    */
-  addReminder(e) {
-    const { id } = e.currentTarget.dataset
+  addPlanting(e) {
+    const { id, name } = e.currentTarget.dataset
     wx.navigateTo({
-      url: `/pages/reminders/reminders?gardenId=${id}`
+      url: `/pages/add-planting/add-planting?gardenId=${id}&gardenName=${name}`
     })
   },
 

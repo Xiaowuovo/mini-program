@@ -80,12 +80,19 @@ async def test_login(
 
     无需微信code，直接创建或获取测试用户
     支持创建管理员账号（role=admin）或普通租户（role=tenant）
+
+    新用户登录时会自动创建5-15个可用菜地
     """
+    import random
+    import json
+    from app.models.garden import Garden
+
     # 使用固定的测试openid
     test_openid = "test_openid_" + login_data.nickname + "_" + login_data.role
 
     # 查询用户
     user = db.query(User).filter(User.openid == test_openid).first()
+    is_new_user = user is None
 
     # 如果用户不存在，创建新用户
     if not user:
@@ -103,6 +110,29 @@ async def test_login(
             user.role = login_data.role
             db.commit()
             db.refresh(user)
+
+    # 如果是新用户，自动创建菜地
+    if is_new_user and login_data.role == 'tenant':
+        from garden_images import get_random_garden_data
+
+        # 随机创建5-15个菜地
+        garden_count = random.randint(5, 15)
+
+        for _ in range(garden_count):
+            garden_data = get_random_garden_data()
+
+            garden = Garden(
+                name=garden_data['name'],
+                area=garden_data['area'],
+                price=garden_data['price'],
+                location=garden_data['location'],
+                description=garden_data['description'],
+                images=json.dumps(garden_data['images'], ensure_ascii=False),
+                status=garden_data['status']
+            )
+            db.add(garden)
+
+        db.commit()
 
     # 生成JWT令牌（sub必须是字符串）
     access_token = create_access_token(data={"sub": str(user.id)})

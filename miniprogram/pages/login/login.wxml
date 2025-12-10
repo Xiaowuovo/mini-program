@@ -10,6 +10,38 @@
     <view class="welcome-text">欢迎来到云端小筑</view>
     <view class="desc-text">享受种植的乐趣，体验田园生活</view>
 
+    <!-- 登录历史 -->
+    <view wx:if="{{showLoginHistory}}" class="login-history">
+      <view class="history-header">
+        <text class="history-title">📋 最近登录</text>
+        <text class="history-clear" bindtap="clearLoginHistory">清除</text>
+      </view>
+
+      <view class="history-list">
+        <view
+          wx:for="{{recentLogins}}"
+          wx:key="index"
+          class="history-item"
+          bindtap="selectHistoryLogin"
+          data-nickname="{{item.nickname}}"
+          data-role="{{item.role}}"
+        >
+          <view class="history-avatar">
+            <text class="avatar-icon">{{item.role === 'admin' ? '👨‍💼' : '👤'}}</text>
+          </view>
+          <view class="history-info">
+            <view class="history-nickname">{{item.nickname}}</view>
+            <view class="history-role">
+              <text class="role-badge {{item.role === 'admin' ? 'admin' : 'tenant'}}">
+                {{item.role === 'admin' ? '管理员' : '用户'}}
+              </text>
+            </view>
+          </view>
+          <view class="history-arrow">›</view>
+        </view>
+      </view>
+    </view>
+
     <view class="features">
       <view class="feature-item">
         <text class="feature-icon">🌱</text>
@@ -29,19 +61,21 @@
       </view>
     </view>
 
+    <!-- 新用户登录 -->
     <button
       class="login-btn"
       type="primary"
       bindtap="onLogin"
       loading="{{isLoading}}"
     >
-      微信一键登录
+      <text class="btn-icon">➕</text>
+      创建新用户登录
     </button>
 
     <!-- 管理端入口 -->
     <view class="admin-entry" bindtap="onAdminLogin">
       <text class="admin-icon">⚙️</text>
-      <text class="admin-text">管理端登录</text>
+      <text class="admin-text">创建管理员登录</text>
     </view>
 
     <view class="agreement">

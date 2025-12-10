@@ -108,7 +108,7 @@ class SmartReminderEngine:
                     source="rule_based",
                     extra_data={
                         "crop_name": crop.name,
-                        "growth_stage": record.current_stage.value,
+                        "growth_stage": record.current_stage,
                         "watering_amount": stage_rule.watering_amount,
                         "frequency": stage_rule.watering_frequency
                     }
@@ -134,7 +134,7 @@ class SmartReminderEngine:
                     source="rule_based",
                     extra_data={
                         "crop_name": crop.name,
-                        "growth_stage": record.current_stage.value,
+                        "growth_stage": record.current_stage,
                         "fertilizer_type": stage_rule.fertilizer_type,
                         "frequency": stage_rule.fertilizing_frequency
                     }
@@ -160,7 +160,7 @@ class SmartReminderEngine:
                     source="rule_based",
                     extra_data={
                         "crop_name": crop.name,
-                        "growth_stage": record.current_stage.value,
+                        "growth_stage": record.current_stage,
                         "frequency": stage_rule.weeding_frequency
                     }
                 ))
@@ -186,7 +186,7 @@ class SmartReminderEngine:
                     source="rule_based",
                     extra_data={
                         "crop_name": crop.name,
-                        "growth_stage": record.current_stage.value,
+                        "growth_stage": record.current_stage,
                         "common_pests": crop.common_pests
                     }
                 ))

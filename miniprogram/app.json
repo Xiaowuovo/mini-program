@@ -14,6 +14,8 @@
     "pages/publish-post/publish-post",
     "pages/services/services",
     "pages/reminders/reminders",
+    "pages/add-reminder/add-reminder",
+    "pages/add-planting/add-planting",
     "pages/profile/profile",
     "pages/edit-profile/edit-profile",
     "pages/settings/settings",

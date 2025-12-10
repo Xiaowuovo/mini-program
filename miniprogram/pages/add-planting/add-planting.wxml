@@ -1,0 +1,117 @@
+<!--pages/add-planting/add-planting.wxml-->
+<view class="container add-planting-page">
+  <!-- 顶部提示 -->
+  <view class="header-tip">
+    <text class="tip-icon">🌱</text>
+    <view class="tip-content">
+      <text class="tip-title">添加种植记录</text>
+      <text class="tip-desc">为{{gardenName}}添加作物种植记录</text>
+    </view>
+  </view>
+
+  <!-- 选择作物 -->
+  <view class="form-section">
+    <view class="section-title">选择作物 *</view>
+    <scroll-view class="crop-scroll" scroll-x>
+      <view class="crop-grid">
+        <view
+          wx:for="{{cropList}}"
+          wx:key="id"
+          class="crop-card {{selectedCropId === item.id ? 'selected' : ''}}"
+          bindtap="selectCrop"
+          data-crop="{{item}}"
+        >
+          <text class="crop-icon">{{item.icon}}</text>
+          <text class="crop-name">{{item.name}}</text>
+          <text class="crop-days">{{item.growthDays}}天</text>
+          <view wx:if="{{selectedCropId === item.id}}" class="selected-badge">
+            <text class="badge-icon">✓</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 种植信息 -->
+  <view class="form-section">
+    <view class="section-title">种植信息</view>
+
+    <!-- 种植日期 -->
+    <view class="form-item">
+      <text class="item-label">种植日期 *</text>
+      <picker
+        mode="date"
+        value="{{formData.plantingDate}}"
+        bindchange="onDateChange"
+      >
+        <view class="picker-view">
+          <text class="picker-text">{{formData.plantingDate || '请选择日期'}}</text>
+          <text class="picker-arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 种植数量 -->
+    <view class="form-item">
+      <text class="item-label">种植数量（棵）*</text>
+      <input
+        class="item-input"
+        type="number"
+        value="{{formData.quantity}}"
+        bindinput="onQuantityInput"
+        placeholder="请输入种植数量"
+      />
+    </view>
+
+    <!-- 占地面积 -->
+    <view class="form-item">
+      <text class="item-label">占地面积（㎡）*</text>
+      <input
+        class="item-input"
+        type="digit"
+        value="{{formData.area}}"
+        bindinput="onAreaInput"
+        placeholder="请输入占地面积"
+      />
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-item">
+      <text class="item-label">备注</text>
+      <textarea
+        class="item-textarea"
+        value="{{formData.notes}}"
+        bindinput="onNotesInput"
+        placeholder="请输入备注信息（选填）"
+        maxlength="200"
+      />
+    </view>
+  </view>
+
+  <!-- 提示信息 -->
+  <view class="info-section" wx:if="{{selectedCropId}}">
+    <view class="info-item">
+      <text class="info-icon">💡</text>
+      <text class="info-text">
+        添加后系统将自动生成智能提醒任务，包括浇水、施肥、除草等
+      </text>
+    </view>
+    <view class="info-item">
+      <text class="info-icon">📅</text>
+      <text class="info-text">
+        预计{{selectedCropGrowthDays}}天后可以收获
+      </text>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button
+      class="submit-btn {{selectedCropId ? '' : 'disabled'}}"
+      bindtap="submitForm"
+      disabled="{{submitting || !selectedCropId}}"
+    >
+      {{submitting ? '提交中...' : '确认添加'}}
+    </button>
+  </view>
+</view>

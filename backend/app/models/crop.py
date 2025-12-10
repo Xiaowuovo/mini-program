@@ -96,7 +96,6 @@ class CropGrowthStage(Base):
     stage_tips = Column(String(500), comment="该阶段关键提示")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 
 class IoTSensor(Base):

@@ -1,0 +1,121 @@
+<!--pages/add-reminder/add-reminder.wxml-->
+<view class="container add-reminder-page">
+  <!-- 顶部提示 -->
+  <view class="header-tip">
+    <text class="tip-icon">⏰</text>
+    <view class="tip-content">
+      <text class="tip-title">添加手动提醒</text>
+      <text class="tip-desc">创建自定义任务提醒</text>
+    </view>
+  </view>
+
+  <!-- 选择任务类型 -->
+  <view class="form-section">
+    <view class="section-title">任务类型 *</view>
+    <view class="task-type-grid">
+      <view
+        wx:for="{{taskTypes}}"
+        wx:key="value"
+        class="task-type-item {{selectedType === item.value ? 'selected' : ''}}"
+        bindtap="selectTaskType"
+        data-type="{{item.value}}"
+        style="border-color: {{selectedType === item.value ? item.color : '#E0E0E0'}}"
+      >
+        <text class="task-icon">{{item.icon}}</text>
+        <text class="task-label" style="color: {{selectedType === item.value ? item.color : '#666'}}">
+          {{item.label}}
+        </text>
+        <view wx:if="{{selectedType === item.value}}" class="selected-badge" style="background: {{item.color}}">
+          <text class="badge-icon">✓</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提醒信息 -->
+  <view class="form-section">
+    <view class="section-title">提醒信息</view>
+
+    <!-- 标题 -->
+    <view class="form-item">
+      <text class="item-label">标题 *</text>
+      <input
+        class="item-input"
+        type="text"
+        value="{{formData.title}}"
+        bindinput="onTitleInput"
+        placeholder="请输入提醒标题"
+        maxlength="50"
+      />
+    </view>
+
+    <!-- 描述 -->
+    <view class="form-item">
+      <text class="item-label">描述（选填）</text>
+      <textarea
+        class="item-textarea"
+        value="{{formData.description}}"
+        bindinput="onDescriptionInput"
+        placeholder="请输入详细描述（选填）"
+        maxlength="200"
+      />
+    </view>
+
+    <!-- 提醒日期 -->
+    <view class="form-item">
+      <text class="item-label">提醒日期 *</text>
+      <picker
+        mode="date"
+        value="{{formData.remindDate}}"
+        bindchange="onDateChange"
+      >
+        <view class="picker-view">
+          <text class="picker-text">{{formData.remindDate || '请选择日期'}}</text>
+          <text class="picker-arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 提醒时间 -->
+    <view class="form-item">
+      <text class="item-label">提醒时间 *</text>
+      <picker
+        mode="time"
+        value="{{formData.remindTime}}"
+        bindchange="onTimeChange"
+      >
+        <view class="picker-view">
+          <text class="picker-text">{{formData.remindTime}}</text>
+          <text class="picker-arrow">></text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 提示信息 -->
+  <view class="info-section">
+    <view class="info-item">
+      <text class="info-icon">💡</text>
+      <text class="info-text">
+        手动添加的提醒会保存在"任务提醒"列表中
+      </text>
+    </view>
+    <view class="info-item">
+      <text class="info-icon">⏰</text>
+      <text class="info-text">
+        建议提前设置提醒时间，避免错过重要任务
+      </text>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button
+      class="submit-btn {{selectedType && formData.title ? '' : 'disabled'}}"
+      bindtap="submitForm"
+      disabled="{{submitting || !selectedType || !formData.title}}"
+    >
+      {{submitting ? '提交中...' : '确认添加'}}
+    </button>
+  </view>
+</view>

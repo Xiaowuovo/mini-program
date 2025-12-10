@@ -33,7 +33,23 @@ def _enrich_garden_with_order_info(garden: Garden, user_id: Optional[int], db: S
     Returns:
         包含订单信息的菜地字典
     """
-    garden_dict = GardenSchema.from_orm(garden).dict()
+    import json
+
+    # 转换 garden 对象为字典，手动处理 images 字段
+    garden_dict = {
+        'id': garden.id,
+        'name': garden.name,
+        'area': garden.area,
+        'price': garden.price,
+        'status': garden.status,
+        'location': garden.location,
+        'description': garden.description,
+        'images': json.loads(garden.images) if garden.images and isinstance(garden.images, str) else (garden.images or []),
+        'video_stream_url': garden.video_stream_url,
+        'created_at': garden.created_at,
+        'updated_at': garden.updated_at
+    }
+
     garden_dict['is_mine'] = False
     garden_dict['current_order'] = None
 
@@ -416,3 +432,93 @@ def _ensure_video_url(garden_dict: dict) -> dict:
     if not garden_dict.get('video_stream_url') or 'example.com' in str(garden_dict.get('video_stream_url', '')):
         garden_dict['video_stream_url'] = UNIFIED_VIDEO_STREAM_URL
     return garden_dict
+
+
+@router.post("/planting-records", summary="创建种植记录")
+async def create_planting_record(
+    request_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    为菜地创建种植记录
+    """
+    from app.models.crop import PlantingRecord, Crop, GrowthStage
+    from datetime import datetime, timedelta
+
+    # 从请求体获取参数
+    garden_id = request_data.get('garden_id')
+    crop_id = request_data.get('crop_id')
+    planting_date = request_data.get('planting_date')
+    quantity = request_data.get('quantity', 1)
+    area = request_data.get('area', 0)
+    notes = request_data.get('notes', '')
+
+    # 参数验证
+    if not garden_id:
+        raise HTTPException(status_code=400, detail="缺少必需参数: garden_id")
+    if not crop_id:
+        raise HTTPException(status_code=400, detail="缺少必需参数: crop_id")
+    if not planting_date:
+        raise HTTPException(status_code=400, detail="缺少必需参数: planting_date")
+
+    # 验证菜地是否存在
+    garden = db.query(Garden).filter(Garden.id == garden_id).first()
+    if not garden:
+        raise HTTPException(status_code=404, detail="菜地不存在")
+
+    # 验证用户是否有该菜地的租赁权限
+    active_order = db.query(Order).filter(
+        Order.user_id == current_user.id,
+        Order.garden_id == garden_id,
+        Order.status.in_([OrderStatus.PAID, OrderStatus.ACTIVE]),
+        Order.end_date >= date.today()
+    ).first()
+
+    if not active_order:
+        raise HTTPException(status_code=403, detail="您没有该菜地的租赁权限")
+
+    # 验证作物是否存在
+    crop = db.query(Crop).filter(Crop.id == crop_id).first()
+    if not crop:
+        raise HTTPException(status_code=404, detail="作物不存在")
+
+    # 解析种植日期
+    try:
+        planting_datetime = datetime.strptime(planting_date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="日期格式错误，应为 YYYY-MM-DD")
+
+    # 计算预计收获日期
+    expected_harvest_date = planting_datetime + timedelta(days=crop.total_growth_days)
+
+    # 创建种植记录
+    planting_record = PlantingRecord(
+        garden_id=garden_id,
+        crop_id=crop_id,
+        user_id=current_user.id,
+        planting_date=planting_datetime,
+        expected_harvest_date=expected_harvest_date,
+        current_stage=GrowthStage.SEED.value,
+        current_stage_day=1,
+        quantity=quantity,
+        area=area,
+        status="growing",
+        notes=notes
+    )
+
+    db.add(planting_record)
+    db.commit()
+    db.refresh(planting_record)
+
+    return {
+        "message": "种植记录创建成功",
+        "planting_record": {
+            "id": planting_record.id,
+            "crop_name": crop.name,
+            "planting_date": planting_record.planting_date.isoformat(),
+            "expected_harvest_date": planting_record.expected_harvest_date.isoformat(),
+            "quantity": planting_record.quantity,
+            "area": planting_record.area
+        }
+    }

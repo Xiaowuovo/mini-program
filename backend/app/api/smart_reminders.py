@@ -206,6 +206,77 @@ def simulate_iot_data(
     }
 
 
+@router.post("/create")
+def create_manual_reminder(
+    request_data: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    手动创建提醒
+
+    请求体:
+    {
+        "garden_id": 1,
+        "reminder_type": "watering",
+        "title": "浇水提醒",
+        "description": "记得浇水",
+        "remind_time": "2024-12-11 09:00:00",
+        "priority": 3
+    }
+    """
+    from datetime import datetime
+
+    # 获取参数
+    garden_id = request_data.get('garden_id')
+    reminder_type = request_data.get('reminder_type')
+    title = request_data.get('title')
+    description = request_data.get('description', '')
+    remind_time_str = request_data.get('remind_time')
+    priority = request_data.get('priority', 3)
+
+    # 参数验证
+    if not reminder_type:
+        raise HTTPException(status_code=400, detail="缺少必需参数: reminder_type")
+    if not title:
+        raise HTTPException(status_code=400, detail="缺少必需参数: title")
+    if not remind_time_str:
+        raise HTTPException(status_code=400, detail="缺少必需参数: remind_time")
+
+    # 解析时间
+    try:
+        remind_time = datetime.strptime(remind_time_str, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="时间格式错误，应为: YYYY-MM-DD HH:MM:SS")
+
+    # 创建提醒
+    reminder = SmartReminder(
+        user_id=current_user.id,
+        garden_id=garden_id,
+        reminder_type=reminder_type,
+        title=title,
+        description=description,
+        remind_time=remind_time,
+        priority=priority,
+        source='manual',
+        status='pending'
+    )
+
+    db.add(reminder)
+    db.commit()
+    db.refresh(reminder)
+
+    return {
+        "message": "提醒创建成功",
+        "reminder": {
+            "id": reminder.id,
+            "title": reminder.title,
+            "remind_time": reminder.remind_time.isoformat(),
+            "reminder_type": reminder.reminder_type
+        }
+    }
+
+
 @router.get("/statistics")
 def get_reminder_statistics(
     db: Session = Depends(get_db),

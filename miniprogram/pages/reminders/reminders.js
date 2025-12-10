@@ -405,16 +405,33 @@ Page({
    * 添加提醒
    */
   addReminder() {
-    wx.navigateTo({
-      url: '/pages/add-reminder/add-reminder',
-      fail: (err) => {
-        console.error('页面跳转失败:', err)
-        wx.showToast({
-          title: '功能开发中',
-          icon: 'none'
-        })
-      }
-    })
+    // 如果智能提醒已启用
+    if (this.data.useSmartReminders) {
+      wx.showModal({
+        title: '提示',
+        content: '智能提醒基于您的种植记录自动生成。是否添加手动提醒？',
+        confirmText: '手动添加',
+        cancelText: '查看种植',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户选择手动添加
+            wx.navigateTo({
+              url: '/pages/add-reminder/add-reminder'
+            })
+          } else {
+            // 用户选择查看种植记录
+            wx.navigateTo({
+              url: '/pages/my-gardens/my-gardens'
+            })
+          }
+        }
+      })
+    } else {
+      // 智能提醒已关闭，直接跳转到手动添加页面
+      wx.navigateTo({
+        url: '/pages/add-reminder/add-reminder'
+      })
+    }
   },
 
   /**
