@@ -1,0 +1,48 @@
+<!--pages/login/login.wxml-->
+<view class="login-container">
+  <view class="login-header">
+    <image class="logo" src="/images/logo.png" mode="aspectFit"></image>
+    <view class="app-name">云端小筑</view>
+    <view class="app-desc">您的专属共享菜园</view>
+  </view>
+
+  <view class="login-content">
+    <view class="welcome-text">欢迎来到云端小筑</view>
+    <view class="desc-text">享受种植的乐趣，体验田园生活</view>
+
+    <view class="features">
+      <view class="feature-item">
+        <text class="feature-icon">🌱</text>
+        <text>在线租地</text>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">📹</text>
+        <text>远程监控</text>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">⏰</text>
+        <text>智能提醒</text>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">💬</text>
+        <text>社区交流</text>
+      </view>
+    </view>
+
+    <button
+      class="login-btn"
+      type="primary"
+      bindtap="onLogin"
+      loading="{{isLoading}}"
+    >
+      微信一键登录
+    </button>
+
+    <view class="agreement">
+      <text>登录即表示同意</text>
+      <text class="link" bindtap="onViewAgreement">《用户协议》</text>
+      <text>和</text>
+      <text class="link" bindtap="onViewPrivacy">《隐私政策》</text>
+    </view>
+  </view>
+</view>

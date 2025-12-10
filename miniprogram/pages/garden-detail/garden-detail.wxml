@@ -1,0 +1,123 @@
+<!--pages/garden-detail/garden-detail.wxml-->
+<view class="container garden-detail-page">
+  <view wx:if="{{loading}}" class="loading">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:if="{{!loading && garden}}" class="detail-content">
+    <!-- 图片轮播 -->
+    <view class="image-section">
+      <swiper
+        class="garden-swiper"
+        indicator-dots="{{garden.images && garden.images.length > 1}}"
+        indicator-color="rgba(255,255,255,0.5)"
+        indicator-active-color="#4CAF50"
+        autoplay="{{false}}"
+        bindchange="onSwiperChange"
+      >
+        <swiper-item wx:for="{{garden.images && garden.images.length > 0 ? garden.images : ['/images/default-garden.png']}}" wx:key="index">
+          <image
+            src="{{item}}"
+            class="garden-image"
+            mode="aspectFill"
+            bindtap="previewImage"
+            data-index="{{index}}"
+            binderror="onImageError"
+          ></image>
+        </swiper-item>
+      </swiper>
+
+      <view class="image-indicator" wx:if="{{garden.images && garden.images.length > 1}}">
+        <text>{{currentImageIndex + 1}}/{{garden.images.length}}</text>
+      </view>
+
+      <view class="video-btn" bindtap="viewVideoMonitor">
+        <image src="/images/icon-video.png" class="video-icon"></image>
+        <text>实时监控</text>
+      </view>
+    </view>
+
+    <!-- 基本信息 -->
+    <view class="info-section">
+      <view class="garden-header">
+        <text class="garden-name">{{garden.name}}</text>
+        <view class="garden-status status-{{garden.status}}">
+          {{garden.status === 'available' ? '可租用' : garden.status === 'rented' ? '已租出' : '维护中'}}
+        </view>
+      </view>
+
+      <view class="garden-price">
+        <text class="price-label">租金</text>
+        <text class="price-number">¥{{garden.price}}</text>
+        <text class="price-unit">/月</text>
+      </view>
+
+      <view class="garden-specs">
+        <view class="spec-item">
+          <text class="spec-label">面积</text>
+          <text class="spec-value">{{garden.area}}㎡</text>
+        </view>
+        <view class="spec-item">
+          <text class="spec-label">位置</text>
+          <text class="spec-value">{{garden.location || '暂无'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 详细描述 -->
+    <view class="desc-section">
+      <view class="section-title">菜地详情</view>
+      <view class="desc-content">
+        <text>{{garden.description || '暂无详细描述'}}</text>
+      </view>
+    </view>
+
+    <!-- 特色服务 -->
+    <view class="features-section">
+      <view class="section-title">特色服务</view>
+      <view class="features-list">
+        <view class="feature-item">
+          <image src="/images/icon-water.png" class="feature-icon"></image>
+          <text>自动灌溉</text>
+        </view>
+        <view class="feature-item">
+          <image src="/images/icon-tools.png" class="feature-icon"></image>
+          <text>工具免费</text>
+        </view>
+        <view class="feature-item">
+          <image src="/images/icon-video.png" class="feature-icon"></image>
+          <text>远程监控</text>
+        </view>
+        <view class="feature-item">
+          <image src="/images/icon-guide.png" class="feature-icon"></image>
+          <text>专业指导</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 相关推荐 -->
+    <view class="recommend-section">
+      <view class="section-title">相关推荐</view>
+      <text class="recommend-tip">更多优质菜地等你发现</text>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar" wx:if="{{!loading && garden}}">
+    <view class="bar-left">
+      <view class="bar-btn" bindtap="contactService">
+        <image src="/images/icon-service.png" class="bar-icon"></image>
+        <text>客服</text>
+      </view>
+    </view>
+    <view class="bar-right">
+      <button
+        class="rent-btn {{garden.status === 'available' ? 'available' : 'disabled'}}"
+        bindtap="rentGarden"
+        disabled="{{garden.status !== 'available'}}"
+      >
+        {{garden.status === 'available' ? '立即租用' : garden.status === 'rented' ? '已租出' : '维护中'}}
+      </button>
+    </view>
+  </view>
+</view>

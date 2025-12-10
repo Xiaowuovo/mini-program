@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "菜地状态",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#F5F7FA",
+  "backgroundTextStyle": "dark"
+}

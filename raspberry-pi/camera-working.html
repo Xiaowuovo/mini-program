@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>远程摄像头</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.2.3/adapter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="janus.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #000; overflow: hidden; }
+        #videocontainer { width: 100vw; height: 100vh; position: relative; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+        audio { display: none; }
+        #status {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: #4CAF50;
+            padding: 10px 20px; border-radius: 20px; font-size: 14px; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">🔴 初始化中...</div>
+    <div id="videocontainer"></div>
+
+    <script>
+        const ROOM_ID = 1234;
+        const SERVER = "https://124.222.14.2:8089/janus";
+
+        let janus, remoteFeed;
+        let remoteTracks = {};
+
+        function log(msg) {
+            console.log('[LOG]', msg);
+            $('#status').text(msg);
+        }
+
+        $(document).ready(function() {
+            Janus.init({
+                debug: "all",
+                callback: function() {
+                    log('🟢 初始化成功');
+
+                    janus = new Janus({
+                        server: SERVER,
+                        success: function() {
+                            log('🟢 已连接');
+                            attachSubscriber();
+                        }
+                    });
+                }
+            });
+        });
+
+        function attachSubscriber() {
+            janus.attach({
+                plugin: "janus.plugin.videoroom",
+                success: function(pluginHandle) {
+                    remoteFeed = pluginHandle;
+                    log('🟢 插件附加成功');
+
+                    // 获取参与者
+                    remoteFeed.send({
+                        message: { request: "listparticipants", room: ROOM_ID },
+                        success: function(result) {
+                            const list = result.participants || [];
+                            if (list.length > 0 && list[0].publisher) {
+                                log('🟢 发现发布者');
+                                subscribe(list[0].id);
+                            } else {
+                                log('⚠️ 无发布者');
+                            }
+                        }
+                    });
+                },
+                onmessage: function(msg, jsep) {
+                    if (jsep) {
+                        remoteFeed.createAnswer({
+                            jsep: jsep,
+                            tracks: [
+                                { type: 'audio', capture: false, recv: true },
+                                { type: 'video', capture: false, recv: true }
+                            ],
+                            success: function(jsep) {
+                                remoteFeed.send({
+                                    message: { request: "start" },
+                                    jsep: jsep
+                                });
+                                log('🟢 等待视频...');
+                            }
+                        });
+                    }
+                },
+                onremotetrack: function(track, mid, on) {
+                    console.log('Track ' + (on ? 'added' : 'removed') + ':', track.kind, 'mid:', mid);
+
+                    if (!on) {
+                        $('#remote-' + mid).remove();
+                        delete remoteTracks[mid];
+                        return;
+                    }
+
+                    // 为每个track创建独立的stream和元素
+                    let stream = new MediaStream([track]);
+                    remoteTracks[mid] = stream;
+
+                    if (track.kind === 'audio') {
+                        $('#videocontainer').append('<audio id="remote-' + mid + '" autoplay/>');
+                        Janus.attachMediaStream($('#remote-' + mid).get(0), stream);
+                        log('🔴 音频播放中');
+                    } else {
+                        $('#videocontainer').append('<video id="remote-' + mid + '" autoplay playsinline/>');
+                        Janus.attachMediaStream($('#remote-' + mid).get(0), stream);
+                        log('🔴 视频播放中');
+                    }
+                }
+            });
+        }
+
+        function subscribe(feedId) {
+            log('🟢 订阅 ' + feedId);
+            remoteFeed.send({
+                message: {
+                    request: "join",
+                    room: ROOM_ID,
+                    ptype: "subscriber",
+                    feed: feedId
+                }
+            });
+        }
+    </script>
+</body>
+</html>

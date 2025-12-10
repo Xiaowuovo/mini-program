@@ -1,0 +1,242 @@
+/* pages/my-gardens/my-gardens.wxss */
+.my-gardens-page {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  padding-bottom: 20rpx;
+}
+
+/* 状态标签栏 */
+.status-tabs {
+  background-color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tabs-scroll {
+  white-space: nowrap;
+}
+
+.tabs-wrapper {
+  display: inline-flex;
+  padding: 0 20rpx;
+}
+
+.tab-item {
+  display: inline-block;
+  padding: 28rpx 40rpx;
+  font-size: 28rpx;
+  color: #666666;
+  position: relative;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.tab-item.active {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #4CAF50;
+  border-radius: 3rpx;
+}
+
+/* 菜地列表 */
+.garden-list {
+  padding: 20rpx;
+}
+
+.garden-card {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.garden-card.active {
+  border-left: 6rpx solid #4CAF50;
+}
+
+.garden-card.expired {
+  border-left: 6rpx solid #9E9E9E;
+  opacity: 0.7;
+}
+
+/* 菜地头部 */
+.garden-header {
+  display: flex;
+  padding: 24rpx;
+  gap: 20rpx;
+}
+
+.garden-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+  background-color: #f5f5f5;
+}
+
+.garden-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.garden-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.garden-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 10rpx;
+}
+
+.status-badge {
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  flex-shrink: 0;
+}
+
+.status-badge.active {
+  color: #4CAF50;
+  background-color: #E8F5E9;
+}
+
+.status-badge.expired {
+  color: #9E9E9E;
+  background-color: #F5F5F5;
+}
+
+.garden-spec {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.spec-item {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+/* 租期信息 */
+.rental-info {
+  padding: 20rpx 24rpx;
+  background-color: #FAFAFA;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8rpx 0;
+}
+
+.info-label {
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.info-value {
+  font-size: 26rpx;
+  color: #333333;
+}
+
+.info-value.highlight {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.info-value.expired-text {
+  color: #F44336;
+}
+
+/* 操作按钮 */
+.garden-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  gap: 15rpx;
+}
+
+.action-btn {
+  padding: 14rpx 28rpx;
+  border-radius: 50rpx;
+  font-size: 26rpx;
+  text-align: center;
+  min-width: 110rpx;
+}
+
+.action-btn.secondary {
+  color: #666666;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+}
+
+.action-btn.primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+/* 加载和空状态 */
+.loading-state,
+.load-more,
+.no-more {
+  text-align: center;
+  padding: 40rpx;
+  font-size: 28rpx;
+  color: #999999;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 40rpx;
+}
+
+.empty-image {
+  width: 240rpx;
+  height: 240rpx;
+  margin-bottom: 40rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999999;
+  margin-bottom: 40rpx;
+}
+
+.go-rent-btn {
+  padding: 20rpx 60rpx;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: #ffffff;
+  border-radius: 50rpx;
+  font-size: 28rpx;
+}

@@ -1,0 +1,176 @@
+# 共享菜园云端小筑 - Git忽略文件
+
+# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 虚拟环境
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================
+# 环境变量和配置
+# ============================================
+.env
+.env.local
+.env.*.local
+*.env
+
+# ============================================
+# 数据库
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.sql.backup
+
+# ============================================
+# 日志文件
+# ============================================
+*.log
+logs/
+*.log.*
+
+# ============================================
+# IDE和编辑器
+# ============================================
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ============================================
+# 系统文件
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ============================================
+# 测试和覆盖率
+# ============================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# ============================================
+# 微信小程序
+# ============================================
+# 小程序临时文件
+miniprogram/.DS_Store
+miniprogram/**/*.DS_Store
+
+# 小程序上传文件
+miniprogram/node_modules/
+miniprogram/miniprogram_npm/
+
+# ============================================
+# 文档和临时文件
+# ============================================
+*.tmp
+*.bak
+*.swp
+*.old
+
+# 备份文件
+backup/
+*.backup
+
+# ============================================
+# 敏感信息（务必忽略）
+# ============================================
+# 密钥文件
+*.key
+*.pem
+*.p12
+secrets/
+
+# 配置文件（包含密码）
+config.local.py
+settings.local.py
+
+# ============================================
+# 其他
+# ============================================
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+
+# 临时目录
+temp/
+tmp/
+cache/
+
+# 上传文件目录（根据实际情况调整）
+uploads/
+media/
+
+# ============================================
+# 项目特定
+# ============================================
+# 可能的大文件目录
+static/uploads/
+media/files/
+
+# 开发时的草稿
+drafts/
+scratch/
+
+# 个人笔记
+notes.md
+TODO.personal.md

@@ -1,0 +1,107 @@
+<!--pages/orders/orders.wxml - 优化版本-->
+<view class="container orders-page">
+  <!-- 状态标签栏 -->
+  <view class="status-tabs">
+    <scroll-view class="tabs-scroll" scroll-x>
+      <view class="tabs-wrapper">
+        <view
+          wx:for="{{statusTabs}}"
+          wx:key="key"
+          class="tab-item {{currentStatus === item.key ? 'active' : ''}}"
+          bindtap="onTabChange"
+          data-status="{{item.key}}"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 订单列表 -->
+  <view class="order-list">
+    <view
+      wx:for="{{orders}}"
+      wx:key="id"
+      class="order-card"
+    >
+      <!-- 订单头部 -->
+      <view class="order-header" bindtap="navigateToDetail" data-id="{{item.id}}">
+        <text class="order-no">订单号：{{item.orderNo}}</text>
+        <view class="order-status {{item.status}}">
+          {{item.statusText}}
+        </view>
+      </view>
+
+      <!-- 倒计时（仅待支付订单） -->
+      <view wx:if="{{item.status === 'pending' && item.remainingTime > 0}}" class="countdown-bar">
+        <text class="countdown-icon">⏰</text>
+        <text class="countdown-text">剩余支付时间：</text>
+        <text class="countdown-time">{{item.countdownText}}</text>
+      </view>
+
+      <!-- 菜地信息 -->
+      <view class="garden-info" bindtap="navigateToDetail" data-id="{{item.id}}">
+        <image
+          src="{{item.garden_image}}"
+          class="garden-image"
+          mode="aspectFill"
+        ></image>
+        <view class="garden-detail">
+          <text class="garden-name">{{item.garden_name || '菜地信息'}}</text>
+          <text class="garden-spec">{{item.garden_area}}㎡</text>
+        </view>
+      </view>
+
+      <!-- 订单信息 -->
+      <view class="order-info" bindtap="navigateToDetail" data-id="{{item.id}}">
+        <view class="info-row">
+          <text class="info-label">租用时间</text>
+          <text class="info-value">{{item.start_date}} 至 {{item.end_date}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">订单金额</text>
+          <text class="info-value price">¥{{item.total_price}}</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="order-actions" wx:if="{{item.actions && item.actions.length > 0}}">
+        <view
+          wx:for="{{item.actions}}"
+          wx:for-item="actionItem"
+          wx:key="action"
+          class="action-btn {{actionItem.type}}"
+          bindtap="handleAction"
+          data-action="{{actionItem.action}}"
+          data-id="{{item.id}}"
+          data-gardenid="{{item.garden_id}}"
+        >
+          {{actionItem.text}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!loading && orders.length === 0}}" class="empty-state">
+    <image src="/images/empty.png" class="empty-image"></image>
+    <text class="empty-text">暂无订单</text>
+    <navigator url="/pages/gardens/gardens" class="go-rent-btn">
+      去租菜地
+    </navigator>
+  </view>
+
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore && !loading && orders.length > 0}}" class="load-more">
+    <text>加载更多...</text>
+  </view>
+
+  <view wx:if="{{!hasMore && orders.length > 0}}" class="no-more">
+    <text>没有更多了</text>
+  </view>
+</view>

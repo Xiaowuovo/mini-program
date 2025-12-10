@@ -1,0 +1,66 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/gardens/gardens",
+    "pages/garden-detail/garden-detail",
+    "pages/garden-status/garden-status",
+    "pages/my-gardens/my-gardens",
+    "pages/orders/orders",
+    "pages/order-detail/order-detail",
+    "pages/create-order/create-order",
+    "pages/community/community",
+    "pages/post-detail/post-detail",
+    "pages/publish-post/publish-post",
+    "pages/services/services",
+    "pages/reminders/reminders",
+    "pages/profile/profile",
+    "pages/edit-profile/edit-profile",
+    "pages/settings/settings",
+    "pages/help/help",
+    "pages/about/about",
+    "pages/video-monitor/video-monitor",
+    "pages/camera/camera"
+  ],
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#3cc51f",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/tab/home.png",
+        "selectedIconPath": "images/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/gardens/gardens",
+        "text": "菜地",
+        "iconPath": "images/tab/garden.png",
+        "selectedIconPath": "images/tab/garden-active.png"
+      },
+      {
+        "pagePath": "pages/community/community",
+        "text": "社区",
+        "iconPath": "images/tab/community.png",
+        "selectedIconPath": "images/tab/community-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/tab/profile.png",
+        "selectedIconPath": "images/tab/profile-active.png"
+      }
+    ]
+  },
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4CAF50",
+    "navigationBarTitleText": "云端小筑",
+    "navigationBarTextStyle": "white",
+    "enablePullDownRefresh": true
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

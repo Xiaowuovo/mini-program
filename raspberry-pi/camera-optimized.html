@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>远程摄像头监控</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.2.3/adapter.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="settings.js"></script>
+<script type="text/javascript" src="janus.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: sans-serif; }
+#video-container { width: 100vw; height: 100vh; position: relative; background: #000; }
+video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+/* 状态指示 */
+.status-indicator {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 50;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #f44336; }
+.status-dot.connected { background: #4CAF50; box-shadow: 0 0 8px #4CAF50; }
+
+/* 播放按钮遮罩 */
+.play-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    display: none; /* 默认隐藏 */
+}
+.play-btn {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.play-icon {
+    width: 0; height: 0;
+    border-top: 15px solid transparent;
+    border-bottom: 15px solid transparent;
+    border-left: 25px solid #fff;
+    margin-left: 5px;
+}
+.play-text { color: #fff; margin-top: 20px; font-size: 16px; }
+
+/* 调试日志 */
+#debug-log {
+    position: absolute;
+    bottom: 10px; left: 10px;
+    color: rgba(255,255,255,0.5);
+    font-size: 10px;
+    z-index: 40;
+    pointer-events: none;
+    max-width: 80%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
+</head>
+<body>
+
+<div id="video-container">
+    <!-- 视频元素容器 -->
+    <div id="remote-video-container" style="width:100%; height:100%;"></div>
+
+    <!-- 状态 -->
+    <div class="status-indicator">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">连接中...</span>
+    </div>
+
+    <!-- 手动播放遮罩 -->
+    <div class="play-overlay" id="play-overlay">
+        <div class="play-btn">
+            <div class="play-icon"></div>
+        </div>
+        <div class="play-text">点击播放视频</div>
+    </div>
+
+    <!-- 调试日志 -->
+    <div id="debug-log">初始化...</div>
+</div>
+
+<script>
+var myroom = 1234;
+var janus = null;
+var remoteFeed = null;
+var remoteTracks = {};
+
+function log(msg) {
+    console.log(msg);
+    $('#debug-log').text(msg);
+}
+
+function updateStatus(status, text) {
+    $('#status-text').text(text);
+    if(status === 'connected') {
+        $('#status-dot').addClass('connected');
+    } else {
+        $('#status-dot').removeClass('connected');
+    }
+}
+
+$(document).ready(function() {
+    // 点击遮罩手动播放
+    $('#play-overlay').click(function() {
+        var video = $('video').get(0);
+        if(video) {
+            video.play().then(() => {
+                $('#play-overlay').hide();
+                log('手动播放成功');
+            }).catch(e => {
+                log('手动播放失败: ' + e.message);
+            });
+        }
+    });
+
+    initJanus();
+});
+
+function initJanus() {
+    Janus.init({
+        debug: "all",
+        callback: function() {
+            if(!Janus.isWebrtcSupported()) {
+                log('不支持WebRTC');
+                return;
+            }
+
+            janus = new Janus({
+                server: server,
+                iceServers: [
+                    {urls: "turn:124.222.14.2:3478", username: "admin", credential: "123456"},
+                    {urls: "turn:124.222.14.2:3478?transport=tcp", username: "admin", credential: "123456"}
+                ],
+                success: function() {
+                    attachSubscriber();
+                },
+                error: function(error) {
+                    log('Janus错误: ' + error);
+                    updateStatus('error', '连接错误');
+                }
+            });
+        }
+    });
+}
+
+function attachSubscriber() {
+    janus.attach({
+        plugin: "janus.plugin.videoroom",
+        opaqueId: "subscriber-" + Janus.randomString(12),
+        success: function(pluginHandle) {
+            remoteFeed = pluginHandle;
+            log('插件已附加');
+
+            // 订阅
+            remoteFeed.send({
+                message: { request: "listparticipants", room: myroom },
+                success: function(result) {
+                    if(result && result.participants) {
+                        var found = false;
+                        for(var i in result.participants) {
+                            var p = result.participants[i];
+                            if(p.publisher === true) {
+                                found = true;
+                                subscribe(p.id);
+                                break;
+                            }
+                        }
+                        if(!found) log('未找到发布者');
+                    }
+                }
+            });
+        },
+        error: function(error) {
+            log('插件错误: ' + error);
+        },
+        onmessage: function(msg, jsep) {
+            if(jsep) {
+                remoteFeed.createAnswer({
+                    jsep: jsep,
+                    tracks: [{ type: 'data' }],
+                    success: function(jsep) {
+                        remoteFeed.send({ message: { request: "start", room: myroom }, jsep: jsep });
+                    },
+                    error: function(error) {
+                        log('WebRTC错误: ' + error);
+                    }
+                });
+            }
+        },
+        onremotetrack: function(track, mid, on) {
+            log('收到轨道: ' + track.kind + ' on=' + on);
+
+            if(!on) return;
+
+            if(track.kind === "video") {
+                var stream = new MediaStream([track]);
+
+                // 创建video元素，关键属性：autoplay, playsinline, muted
+                var video = $('<video autoplay playsinline webkit-playsinline muted></video>');
+                $('#remote-video-container').empty().append(video);
+
+                Janus.attachMediaStream(video.get(0), stream);
+
+                // 尝试自动播放
+                var playPromise = video.get(0).play();
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        log('自动播放成功');
+                        updateStatus('connected', '在线');
+                    }).catch(error => {
+                        log('自动播放被阻止，请点击屏幕');
+                        updateStatus('connected', '需手动播放');
+                        $('#play-overlay').show(); // 显示手动播放按钮
+                    });
+                }
+            }
+        }
+    });
+}
+
+function subscribe(feedId) {
+    remoteFeed.send({
+        message: {
+            request: "join",
+            room: myroom,
+            ptype: "subscriber",
+            feed: feedId
+        }
+    });
+}
+</script>
+</body>
+</html>

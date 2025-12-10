@@ -1,0 +1,132 @@
+<!--pages/settings/settings.wxml-->
+<view class="container settings-page">
+  <!-- 账号设置 -->
+  <view class="settings-section">
+    <view class="section-title">账号设置</view>
+    <view class="setting-item" bindtap="changePassword">
+      <view class="item-left">
+        <text class="item-icon">🔑</text>
+        <text class="item-title">修改密码</text>
+      </view>
+      <text class="item-arrow">></text>
+    </view>
+    <view class="setting-item" bindtap="bindPhone">
+      <view class="item-left">
+        <text class="item-icon">📱</text>
+        <text class="item-title">手机绑定</text>
+      </view>
+      <view class="item-right">
+        <text class="item-value">{{phoneNumber || '未绑定'}}</text>
+        <text class="item-arrow">></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 通知设置 -->
+  <view class="settings-section">
+    <view class="section-title">通知设置</view>
+    <view class="setting-item">
+      <view class="item-left">
+        <text class="item-icon">🔔</text>
+        <text class="item-title">接收通知</text>
+      </view>
+      <switch
+        checked="{{settings.notification}}"
+        bindchange="onNotificationChange"
+        color="#4CAF50"
+      />
+    </view>
+    <view class="setting-item">
+      <view class="item-left">
+        <text class="item-icon">📬</text>
+        <text class="item-title">任务提醒</text>
+      </view>
+      <switch
+        checked="{{settings.taskReminder}}"
+        bindchange="onTaskReminderChange"
+        color="#4CAF50"
+      />
+    </view>
+    <view class="setting-item">
+      <view class="item-left">
+        <text class="item-icon">💬</text>
+        <text class="item-title">评论通知</text>
+      </view>
+      <switch
+        checked="{{settings.commentNotice}}"
+        bindchange="onCommentNoticeChange"
+        color="#4CAF50"
+      />
+    </view>
+  </view>
+
+  <!-- 隐私设置 -->
+  <view class="settings-section">
+    <view class="section-title">隐私设置</view>
+    <view class="setting-item">
+      <view class="item-left">
+        <text class="item-icon">👁️</text>
+        <text class="item-title">公开我的动态</text>
+      </view>
+      <switch
+        checked="{{settings.publicPost}}"
+        bindchange="onPublicPostChange"
+        color="#4CAF50"
+      />
+    </view>
+    <view class="setting-item">
+      <view class="item-left">
+        <text class="item-icon">📍</text>
+        <text class="item-title">允许显示位置</text>
+      </view>
+      <switch
+        checked="{{settings.showLocation}}"
+        bindchange="onShowLocationChange"
+        color="#4CAF50"
+      />
+    </view>
+  </view>
+
+  <!-- 其他设置 -->
+  <view class="settings-section">
+    <view class="section-title">其他</view>
+    <view class="setting-item" bindtap="clearCache">
+      <view class="item-left">
+        <text class="item-icon">🗑️</text>
+        <text class="item-title">清除缓存</text>
+      </view>
+      <view class="item-right">
+        <text class="item-value">{{cacheSize}}</text>
+        <text class="item-arrow">></text>
+      </view>
+    </view>
+    <view class="setting-item" bindtap="checkUpdate">
+      <view class="item-left">
+        <text class="item-icon">⬆️</text>
+        <text class="item-title">检查更新</text>
+      </view>
+      <view class="item-right">
+        <text class="item-value">v1.0.0</text>
+        <text class="item-arrow">></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 法律信息 -->
+  <view class="settings-section">
+    <view class="setting-item" bindtap="showPrivacy">
+      <view class="item-left">
+        <text class="item-icon">📄</text>
+        <text class="item-title">隐私政策</text>
+      </view>
+      <text class="item-arrow">></text>
+    </view>
+    <view class="setting-item" bindtap="showTerms">
+      <view class="item-left">
+        <text class="item-icon">📋</text>
+        <text class="item-title">用户协议</text>
+      </view>
+      <text class="item-arrow">></text>
+    </view>
+  </view>
+</view>

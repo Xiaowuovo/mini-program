@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>远程摄像头</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.2.3/adapter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="janus.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #000; }
+        #remotecontainer { width: 100vw; height: 100vh; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+        audio { display: none; }
+        #status {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: #4CAF50;
+            padding: 10px 20px; border-radius: 20px; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">🔴 初始化中...</div>
+    <div id="remotecontainer"></div>
+
+    <script>
+        const myroom = 1234;
+        const server = "https://124.222.14.2:8089/janus";
+
+        let janus = null;
+        let sfutest = null;
+        let remoteTracks = {};
+
+        $(document).ready(function() {
+            Janus.init({
+                debug: "all",
+                callback: function() {
+                    $('#status').text('🟢 初始化成功');
+                    janus = new Janus({
+                        server: server,
+                        success: function() {
+                            $('#status').text('🟢 已连接');
+                            attachSubscriber();
+                        },
+                        error: function(error) {
+                            $('#status').text('🔴 连接失败');
+                        }
+                    });
+                }
+            });
+        });
+
+        function attachSubscriber() {
+            janus.attach({
+                plugin: "janus.plugin.videoroom",
+                opaqueId: "subscriber-" + Janus.randomString(12),
+                success: function(pluginHandle) {
+                    sfutest = pluginHandle;
+                    $('#status').text('🟢 插件附加成功');
+                    Janus.log("Plugin attached! id=" + sfutest.getId());
+
+                    // 获取参与者列表
+                    let list = {
+                        request: "listparticipants",
+                        room: myroom
+                    };
+                    sfutest.send({
+                        message: list,
+                        success: function(result) {
+                            if(result && result.participants) {
+                                let participants = result.participants;
+                                Janus.log("Participants:", participants);
+                                for(let i in participants) {
+                                    let p = participants[i];
+                                    if(p.publisher === true) {
+                                        $('#status').text('🟢 发现发布者 ID: ' + p.id);
+                                        subscribeToFeed(p.id);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function(error) {
+                    Janus.error("Error attaching plugin", error);
+                    $('#status').text('🔴 插件错误');
+                },
+                onmessage: function(msg, jsep) {
+                    Janus.debug("Got message:", msg);
+                    if(jsep) {
+                        Janus.debug("Handling SDP:", jsep);
+
+                        // ⭐⭐⭐ 强制替换内网IP为公网IP ⭐⭐⭐
+                        if(jsep.sdp && jsep.sdp.indexOf('10.0.12.3') !== -1) {
+                            Janus.warn('⚠️ 检测到内网IP，强制替换为公网IP');
+                            jsep.sdp = jsep.sdp.replace(/10\.0\.12\.3/g, '124.222.14.2');
+                            Janus.log('✅ SDP已修正');
+                        }
+
+                        sfutest.createAnswer({
+                            jsep: jsep,
+                            tracks: [
+                                { type: 'audio', capture: false, recv: true },
+                                { type: 'video', capture: false, recv: true }
+                            ],
+                            success: function(jsep) {
+                                Janus.debug("Got SDP answer:", jsep);
+                                let body = { request: "start", room: myroom };
+                                sfutest.send({ message: body, jsep: jsep });
+                                $('#status').text('🟢 等待视频流...');
+                            },
+                            error: function(error) {
+                                Janus.error("WebRTC error:", error);
+                                $('#status').text('🔴 WebRTC错误');
+                            }
+                        });
+                    }
+                },
+                onlocaltrack: function(track, on) {
+                    // 订阅者不需要本地轨道
+                },
+                onremotetrack: function(track, mid, on, metadata) {
+                    Janus.debug(
+                        "Remote track (mid=" + mid + ") " +
+                        (on ? "added" : "removed") +
+                        (metadata ? " (" + metadata.reason + ") " : "") + ":", track
+                    );
+
+                    if(!on) {
+                        // 轨道移除
+                        $('#remote-' + mid).remove();
+                        delete remoteTracks[mid];
+                        return;
+                    }
+
+                    // 新轨道添加
+                    if($('#remote-' + mid).length > 0) {
+                        return;
+                    }
+
+                    if(track.kind === "audio") {
+                        // 音频轨道
+                        let stream = new MediaStream([track]);
+                        remoteTracks[mid] = stream;
+                        Janus.log("Created remote audio stream:", stream);
+                        $('#remotecontainer').append(
+                            '<audio id="remote-' + mid + '" autoplay playsinline/>'
+                        );
+                        Janus.attachMediaStream($('#remote-' + mid).get(0), stream);
+                        $('#status').text('🔴 音频播放中');
+                    } else {
+                        // 视频轨道
+                        let stream = new MediaStream([track]);
+                        remoteTracks[mid] = stream;
+                        Janus.log("Created remote video stream:", stream);
+                        $('#remotecontainer').append(
+                            '<video id="remote-' + mid + '" autoplay playsinline/>'
+                        );
+                        Janus.attachMediaStream($('#remote-' + mid).get(0), stream);
+                        $('#status').text('🔴 视频播放中');
+                    }
+                }
+            });
+        }
+
+        function subscribeToFeed(feedId) {
+            Janus.log("Subscribing to feed:", feedId);
+            let subscribe = {
+                request: "join",
+                room: myroom,
+                ptype: "subscriber",
+                feed: feedId
+            };
+            sfutest.send({ message: subscribe });
+        }
+    </script>
+</body>
+</html>

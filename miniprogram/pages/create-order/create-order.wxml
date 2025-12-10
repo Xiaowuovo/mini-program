@@ -1,0 +1,106 @@
+<!--pages/create-order/create-order.wxml-->
+<view class="container create-order-page">
+  <view class="order-form">
+    <!-- 菜地信息 -->
+    <view class="form-section" wx:if="{{garden}}">
+      <view class="section-title">菜地信息</view>
+      <view class="garden-info">
+        <image src="{{garden.images && garden.images[0] || '/images/default-garden.png'}}" class="garden-thumb"></image>
+        <view class="garden-detail">
+          <text class="garden-name">{{garden.name}}</text>
+          <text class="garden-spec">{{garden.area}}㎡ · {{garden.location}}</text>
+          <text class="garden-price">¥{{garden.price}}/月</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 租期选择 -->
+    <view class="form-section">
+      <view class="section-title">租期选择</view>
+
+      <view class="form-item">
+        <text class="item-label">开始日期</text>
+        <picker mode="date" value="{{startDate}}" start="{{minDate}}" end="{{maxDate}}" bindchange="onStartDateChange">
+          <view class="picker-value">
+            <text>{{startDate || '请选择'}}</text>
+            <text class="arrow">></text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="item-label">租用月数</text>
+        <picker mode="selector" range="{{[1,2,3,6,12]}}" value="0" bindchange="onMonthsChange">
+          <view class="picker-value">
+            <text>{{months}}个月</text>
+            <text class="arrow">></text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="item-label">结束日期</text>
+        <view class="item-value disabled">
+          <text>{{endDate || '自动计算'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-section">
+      <view class="section-title">备注信息</view>
+      <view class="form-item">
+        <textarea
+          class="notes-input"
+          placeholder="请输入备注信息（选填）"
+          value="{{notes}}"
+          bindinput="onNotesInput"
+          maxlength="200"
+        ></textarea>
+      </view>
+    </view>
+
+    <!-- 价格明细 -->
+    <view class="form-section">
+      <view class="section-title">价格明细</view>
+
+      <view class="price-item">
+        <text class="price-label">租金单价</text>
+        <text class="price-value">¥{{garden ? garden.price : 0}}/月</text>
+      </view>
+
+      <view class="price-item">
+        <text class="price-label">租用月数</text>
+        <text class="price-value">×{{months}}</text>
+      </view>
+
+      <view class="price-divider"></view>
+
+      <view class="price-item total">
+        <text class="price-label">合计</text>
+        <text class="price-value total">¥{{totalPrice}}</text>
+      </view>
+    </view>
+
+    <!-- 服务说明 -->
+    <view class="form-section">
+      <view class="section-title">服务说明</view>
+      <view class="service-tips">
+        <view class="tip-item">· 提供基础农具使用</view>
+        <view class="tip-item">· 提供浇水灌溉服务</view>
+        <view class="tip-item">· 提供种植技术指导</view>
+        <view class="tip-item">· 支持远程视频监控</view>
+        <view class="tip-item">· 可选增值服务（代管理等）</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部提交按钮 -->
+  <view class="submit-bar">
+    <view class="total-price">
+      <text class="label">总计：</text>
+      <text class="price">¥{{totalPrice}}</text>
+    </view>
+    <button class="submit-btn" bindtap="submitOrder">提交订单</button>
+  </view>
+</view>

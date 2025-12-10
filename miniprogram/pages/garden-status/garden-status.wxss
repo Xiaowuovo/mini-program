@@ -1,0 +1,514 @@
+/* pages/garden-status/garden-status.wxss */
+.garden-status-page {
+  background: #F5F7FA;
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* 加载状态 */
+.loading-state {
+  padding: 200rpx 0;
+  text-align: center;
+  color: #999;
+}
+
+/* 头部卡片 */
+.header-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40rpx 32rpx;
+  color: #FFFFFF;
+  margin-bottom: 20rpx;
+}
+
+.garden-header {
+  margin-bottom: 30rpx;
+}
+
+.garden-name {
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.garden-location {
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+
+.rental-info {
+  display: flex;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  backdrop-filter: blur(10rpx);
+}
+
+.rental-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rental-item .label {
+  font-size: 24rpx;
+  opacity: 0.8;
+  margin-bottom: 8rpx;
+}
+
+.rental-item .value {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.rental-item .value.highlight {
+  color: #FFD700;
+  font-size: 36rpx;
+}
+
+/* Tab栏 */
+.tab-bar {
+  display: flex;
+  background: #FFFFFF;
+  margin: 0 32rpx 20rpx;
+  border-radius: 50rpx;
+  padding: 8rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  border-radius: 44rpx;
+  transition: all 0.3s;
+}
+
+.tab-item.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Tab内容 */
+.tab-content {
+  padding: 0 32rpx;
+}
+
+.tab-panel {
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 状态卡片 */
+.status-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.card-subtitle {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.card-badge {
+  background: #FF5722;
+  color: #FFFFFF;
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reminder-text {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #999;
+}
+
+/* 环境健康 */
+.health-score {
+  font-size: 48rpx;
+  font-weight: 700;
+}
+
+.health-status {
+  margin: 20rpx 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 8rpx 24rpx;
+  border-radius: 30rpx;
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.alerts {
+  margin-top: 20rpx;
+}
+
+.alert-item {
+  padding: 16rpx;
+  background: #FFF3E0;
+  border-left: 4rpx solid #FF9800;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  color: #F57C00;
+  margin-bottom: 12rpx;
+}
+
+.alert-item.high {
+  background: #FFEBEE;
+  border-left-color: #F44336;
+  color: #C62828;
+}
+
+/* 作物列表 */
+.crop-list {
+  margin-top: 20rpx;
+}
+
+.crop-item {
+  padding: 20rpx;
+  background: #F5F7FA;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.crop-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.crop-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.crop-stage {
+  font-size: 24rpx;
+  color: #4CAF50;
+  background: #E8F5E9;
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+}
+
+.crop-progress {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8rpx;
+  background: #E0E0E0;
+  border-radius: 4rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  transition: width 0.3s;
+}
+
+.progress-text {
+  font-size: 24rpx;
+  color: #666;
+  min-width: 60rpx;
+  text-align: right;
+}
+
+/* 快捷操作 */
+.quick-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.action-btn {
+  flex: 1;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.action-icon {
+  font-size: 48rpx;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.action-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* 种植卡片 */
+.planting-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.planting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.crop-name-large {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.stage-badge {
+  background: linear-gradient(135deg, #4CAF50, #8BC34A);
+  color: #FFFFFF;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+}
+
+.planting-details {
+  margin-bottom: 24rpx;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.detail-label {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.detail-value {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.detail-value.highlight {
+  color: #FF5722;
+  font-weight: 600;
+}
+
+.growth-progress-section {
+  background: #F5F7FA;
+  padding: 20rpx;
+  border-radius: 12rpx;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.progress-percent {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.progress-bar-large {
+  height: 16rpx;
+  background: #E0E0E0;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.progress-fill-large {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  transition: width 0.3s;
+}
+
+/* 传感器卡片 */
+.sensor-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  border-left: 6rpx solid #4CAF50;
+}
+
+.sensor-card.abnormal {
+  border-left-color: #FF5722;
+  background: #FFF5F4;
+}
+
+.sensor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.sensor-type {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.abnormal-badge {
+  background: #FF5722;
+  color: #FFFFFF;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
+.sensor-value {
+  display: flex;
+  align-items: baseline;
+  margin: 24rpx 0;
+}
+
+.value-number {
+  font-size: 64rpx;
+  font-weight: 700;
+  color: #333;
+  margin-right: 12rpx;
+}
+
+.value-unit {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.abnormal-reason {
+  background: #FFEBEE;
+  padding: 16rpx;
+  border-radius: 8rpx;
+  color: #F44336;
+  font-size: 24rpx;
+  margin: 12rpx 0;
+}
+
+.sensor-time {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
+/* 数据面板 */
+.data-section {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.data-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.data-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.data-item:last-child {
+  border-bottom: none;
+}
+
+.data-label {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.data-value {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.data-value.highlight {
+  color: #FF5722;
+  font-weight: 600;
+}
+
+/* 空状态 */
+.empty-state {
+  padding: 120rpx 0;
+  text-align: center;
+}
+
+.empty-image {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #BBB;
+  display: block;
+}

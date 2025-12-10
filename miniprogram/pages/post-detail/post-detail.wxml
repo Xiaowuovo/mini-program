@@ -1,0 +1,109 @@
+<!--pages/post-detail/post-detail.wxml-->
+<view class="container post-detail-page">
+  <view wx:if="{{loading}}" class="loading">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:if="{{!loading && post}}" class="detail-content">
+    <!-- 用户信息 -->
+    <view class="author-section">
+      <image src="{{post.user_avatar || '/images/default-avatar.png'}}" class="author-avatar"></image>
+      <view class="author-info">
+        <text class="author-name">{{post.user_nickname || '匿名用户'}}</text>
+        <text class="post-time">{{post.created_at}}</text>
+      </view>
+      <button wx:if="{{post.is_author}}" class="delete-btn" bindtap="handleDelete">
+        删除
+      </button>
+    </view>
+
+    <!-- 帖子内容 -->
+    <view class="content-section">
+      <view class="post-title" wx:if="{{post.title}}">{{post.title}}</view>
+      <view class="post-content">{{post.content}}</view>
+
+      <!-- 图片展示 -->
+      <view class="post-images" wx:if="{{post.images && post.images.length > 0}}">
+        <image
+          wx:for="{{post.images}}"
+          wx:key="index"
+          src="{{item}}"
+          mode="widthFix"
+          class="post-image"
+          bindtap="previewImage"
+          data-urls="{{post.images}}"
+          data-current="{{item}}"
+        ></image>
+      </view>
+    </view>
+
+    <!-- 互动统计 -->
+    <view class="stats-section">
+      <view class="stat-item">
+        <text class="stat-icon">❤️</text>
+        <text class="stat-text">{{post.like_count || 0}} 点赞</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-icon">💬</text>
+        <text class="stat-text">{{post.comment_count || 0}} 评论</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-icon">👁️</text>
+        <text class="stat-text">{{post.view_count || 0}} 浏览</text>
+      </view>
+    </view>
+
+    <!-- 评论列表 -->
+    <view class="comments-section">
+      <view class="section-header">
+        <text class="section-title">全部评论 {{comments.length}}</text>
+      </view>
+
+      <view wx:if="{{comments.length > 0}}" class="comment-list">
+        <view wx:for="{{comments}}" wx:key="id" class="comment-item">
+          <image src="{{item.user_avatar || '/images/default-avatar.png'}}" class="comment-avatar"></image>
+          <view class="comment-content">
+            <view class="comment-header">
+              <text class="comment-user">{{item.user_nickname || '匿名'}}</text>
+              <text class="comment-time">{{item.created_at}}</text>
+            </view>
+            <view class="comment-text">{{item.content}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:else class="empty-comments">
+        <text>暂无评论，快来抢沙发~</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar" wx:if="{{!loading && post}}">
+    <view class="comment-input-wrapper">
+      <input
+        class="comment-input"
+        type="text"
+        placeholder="说点什么..."
+        value="{{commentInput}}"
+        bindinput="onCommentInput"
+        confirm-type="send"
+        bindconfirm="sendComment"
+      />
+    </view>
+
+    <view class="action-buttons">
+      <view
+        class="action-btn {{post.liked ? 'liked' : ''}}"
+        bindtap="handleLike"
+      >
+        <text class="btn-icon">{{post.liked ? '❤️' : '🤍'}}</text>
+        <text class="btn-text">{{post.like_count || 0}}</text>
+      </view>
+
+      <button class="send-btn" bindtap="sendComment" disabled="{{submitting}}">
+        {{submitting ? '发送中...' : '发送'}}
+      </button>
+    </view>
+  </view>
+</view>

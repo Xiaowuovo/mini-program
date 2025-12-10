@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>远程摄像头监控</title>
+
+    <!-- 依赖库：按照官方demo的顺序加载 -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.2.3/adapter.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="janus.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        #videoremote {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+            background: #000;
+        }
+
+        #status {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #4CAF50;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+
+        #status.error {
+            color: #FF5252;
+        }
+
+        #status.success {
+            color: #4CAF50;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="status">🔴 初始化中...</div>
+    <div class="loading">
+        <div class="spinner"></div>
+        <div>正在连接...</div>
+    </div>
+    <video id="videoremote" autoplay playsinline muted></video>
+
+    <script type="text/javascript">
+        // 配置
+        const ROOM_ID = 10001;  // 房间号
+        const JANUS_SERVER = window.location.protocol + "//" + window.location.hostname + ":19302/janus";
+
+        // 全局变量
+        let janus = null;
+        let videoroom = null;
+        let remoteFeed = null;
+        let myid = null;
+        let mypvtid = null;
+
+        // 日志函数
+        function log(msg, type = 'info') {
+            console.log('[' + type.toUpperCase() + ']', msg);
+            const status = document.getElementById('status');
+            status.textContent = msg;
+            status.className = type === 'error' ? 'error' : 'success';
+        }
+
+        // 隐藏加载动画
+        function hideLoading() {
+            const loading = document.querySelector('.loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 初始化
+        $(document).ready(function() {
+            // 检查依赖
+            if (typeof adapter === 'undefined') {
+                log('🔴 adapter.js 未加载', 'error');
+                return;
+            }
+
+            if (typeof Janus === 'undefined') {
+                log('🔴 janus.js 未加载', 'error');
+                return;
+            }
+
+            log('🟢 正在初始化...', 'info');
+
+            // 初始化Janus
+            Janus.init({
+                debug: "all",
+                dependencies: Janus.useDefaultDependencies(),
+                callback: function() {
+                    log('🟢 Janus初始化成功', 'success');
+
+                    // 创建Janus会话
+                    janus = new Janus({
+                        server: JANUS_SERVER,
+                        success: function() {
+                            log('🟢 已连接到Janus服务器', 'success');
+                            attachVideoRoomPlugin();
+                        },
+                        error: function(error) {
+                            log('🔴 连接失败: ' + error, 'error');
+                            console.error(error);
+                        },
+                        destroyed: function() {
+                            log('🔴 连接已断开', 'error');
+                        }
+                    });
+                }
+            });
+        });
+
+        // 附加VideoRoom插件
+        function attachVideoRoomPlugin() {
+            log('🟢 附加VideoRoom插件...', 'info');
+
+            janus.attach({
+                plugin: "janus.plugin.videoroom",
+                opaqueId: "videoroom-subscriber-" + Janus.randomString(12),
+                success: function(pluginHandle) {
+                    videoroom = pluginHandle;
+                    log('🟢 插件附加成功', 'success');
+
+                    // 加入房间（作为订阅者）
+                    const register = {
+                        request: "join",
+                        room: ROOM_ID,
+                        ptype: "subscriber",
+                        display: "小程序观看者"
+                    };
+
+                    videoroom.send({ message: register });
+                },
+                error: function(error) {
+                    log('🔴 插件附加失败: ' + error, 'error');
+                    console.error(error);
+                },
+                onmessage: function(msg, jsep) {
+                    console.log("收到消息:", msg);
+
+                    const event = msg["videoroom"];
+
+                    if (event === "joined") {
+                        myid = msg["id"];
+                        mypvtid = msg["private_id"];
+                        log('🟢 已加入房间 ' + ROOM_ID, 'success');
+
+                        // 查看是否有发布者
+                        if (msg["publishers"]) {
+                            const list = msg["publishers"];
+                            console.log("房间中的发布者:", list);
+
+                            if (list.length > 0) {
+                                log('🟢 发现 ' + list.length + ' 个摄像头', 'success');
+                                // 订阅第一个发布者
+                                subscribeToFeed(list[0]);
+                            } else {
+                                log('⚠️ 房间中暂无摄像头，等待中...', 'info');
+                            }
+                        }
+                    } else if (event === "event") {
+                        // 新发布者加入
+                        if (msg["publishers"]) {
+                            const list = msg["publishers"];
+                            console.log("新发布者加入:", list);
+
+                            if (list.length > 0 && !remoteFeed) {
+                                log('🟢 摄像头上线', 'success');
+                                subscribeToFeed(list[0]);
+                            }
+                        } else if (msg["leaving"]) {
+                            log('⚠️ 摄像头离线', 'info');
+                        }
+                    }
+
+                    if (jsep) {
+                        videoroom.handleRemoteJsep({ jsep: jsep });
+                    }
+                },
+                onlocalstream: function(stream) {
+                    // 订阅者不需要本地流
+                },
+                onremotestream: function(stream) {
+                    log('🔴 正在播放', 'success');
+                    hideLoading();
+
+                    const video = document.getElementById('videoremote');
+                    Janus.attachMediaStream(video, stream);
+
+                    // 自动播放
+                    video.play().catch(function(error) {
+                        console.log("自动播放失败:", error);
+                        // 静音后重试
+                        video.muted = true;
+                        video.play();
+                    });
+                },
+                oncleanup: function() {
+                    log('清理连接', 'info');
+                }
+            });
+        }
+
+        // 订阅发布者
+        function subscribeToFeed(publisher) {
+            log('🟢 订阅摄像头: ' + publisher.display, 'info');
+
+            const subscribe = {
+                request: "join",
+                room: ROOM_ID,
+                ptype: "subscriber",
+                feed: publisher.id,
+                private_id: mypvtid
+            };
+
+            // 使用现有的videoroom插件句柄发送订阅请求
+            videoroom.send({ message: subscribe });
+        }
+
+        // 页面卸载时清理
+        window.onbeforeunload = function() {
+            if (janus) {
+                janus.destroy();
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!--pages/my-gardens/my-gardens.wxml-->
+<view class="container my-gardens-page">
+  <!-- 状态标签栏 -->
+  <view class="status-tabs">
+    <scroll-view class="tabs-scroll" scroll-x>
+      <view class="tabs-wrapper">
+        <view
+          wx:for="{{statusTabs}}"
+          wx:key="key"
+          class="tab-item {{currentStatus === item.key ? 'active' : ''}}"
+          bindtap="onTabChange"
+          data-status="{{item.key}}"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 菜地列表 -->
+  <view class="garden-list">
+    <view
+      wx:for="{{gardens}}"
+      wx:key="id"
+      class="garden-card {{item.current_order.is_active ? 'active' : 'expired'}}"
+    >
+      <!-- 菜地图片和基本信息 -->
+      <view class="garden-header" bindtap="viewGardenDetail" data-id="{{item.id}}">
+        <image
+          src="{{item.images && item.images.length > 0 ? item.images[0] : '/images/default-garden.png'}}"
+          class="garden-image"
+          mode="aspectFill"
+        ></image>
+        <view class="garden-info">
+          <view class="garden-name-row">
+            <text class="garden-name">{{item.name}}</text>
+            <view class="status-badge {{item.current_order.is_active ? 'active' : 'expired'}}">
+              {{item.current_order.is_active ? '使用中' : '已过期'}}
+            </view>
+          </view>
+          <view class="garden-spec">
+            <text class="spec-item">📏 {{item.area}}㎡</text>
+            <text class="spec-item">📍 {{item.location || '暂无位置'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 租期信息 -->
+      <view class="rental-info">
+        <view class="info-row">
+          <text class="info-label">租期</text>
+          <text class="info-value">{{item.current_order.start_date}} 至 {{item.current_order.end_date}}</text>
+        </view>
+        <view class="info-row" wx:if="{{item.current_order.is_active}}">
+          <text class="info-label">剩余</text>
+          <text class="info-value highlight">{{item.current_order.remaining_days}} 天</text>
+        </view>
+        <view class="info-row" wx:else>
+          <text class="info-label">状态</text>
+          <text class="info-value expired-text">租期已结束</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="garden-actions">
+        <view class="action-btn secondary" bindtap="viewOrderDetail" data-id="{{item.id}}">
+          订单详情
+        </view>
+        <view wx:if="{{item.current_order.is_active}}" class="action-btn secondary" bindtap="addReminder" data-id="{{item.id}}">
+          添加提醒
+        </view>
+        <view wx:if="{{item.current_order.is_active && item.video_stream_url}}" class="action-btn secondary" bindtap="viewMonitor" data-id="{{item.id}}">
+          视频监控
+        </view>
+        <view class="action-btn primary" bindtap="{{item.current_order.is_active ? 'viewGardenDetail' : 'renewGarden'}}" data-id="{{item.id}}">
+          {{item.current_order.is_active ? '查看详情' : '续租菜地'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!loading && gardens.length === 0}}" class="empty-state">
+    <image src="/images/empty.png" class="empty-image"></image>
+    <text class="empty-text">还没有菜地哦</text>
+    <navigator url="/pages/gardens/gardens" class="go-rent-btn">
+      去租菜地
+    </navigator>
+  </view>
+
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore && !loading && gardens.length > 0}}" class="load-more">
+    <text>加载更多...</text>
+  </view>
+
+  <view wx:if="{{!hasMore && gardens.length > 0}}" class="no-more">
+    <text>没有更多了</text>
+  </view>
+</view>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>远程摄像头</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.2.3/adapter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="janus.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #000; overflow: hidden; }
+        #remotevideo { width: 100vw; height: 100vh; object-fit: contain; }
+        #status {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: #4CAF50;
+            padding: 10px 20px; border-radius: 20px; font-size: 14px; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">🔴 初始化中...</div>
+    <video id="remotevideo" autoplay playsinline></video>
+
+    <script>
+        const ROOM_ID = 1234;
+        const SERVER = "https://124.222.14.2:8089/janus";
+
+        let janus, sfutest;
+
+        function log(msg) {
+            console.log('[LOG]', msg);
+            document.getElementById('status').textContent = msg;
+        }
+
+        $(document).ready(function() {
+            Janus.init({
+                debug: "all",
+                callback: function() {
+                    log('🟢 初始化成功');
+
+                    janus = new Janus({
+                        server: SERVER,
+                        success: function() {
+                            log('🟢 已连接');
+                            janus.attach({
+                                plugin: "janus.plugin.videoroom",
+                                opaqueId: "subscriber-" + Janus.randomString(12),
+                                success: function(pluginHandle) {
+                                    sfutest = pluginHandle;
+                                    log('🟢 插件附加成功');
+
+                                    // 获取参与者列表
+                                    sfutest.send({
+                                        message: { request: "listparticipants", room: ROOM_ID },
+                                        success: function(result) {
+                                            const list = result.participants || [];
+                                            console.log('参与者:', list);
+
+                                            if (list.length > 0 && list[0].publisher) {
+                                                log('🟢 发现发布者');
+                                                subscribe(list[0].id);
+                                            } else {
+                                                log('⚠️ 无发布者');
+                                            }
+                                        }
+                                    });
+                                },
+                                error: function(error) {
+                                    log('🔴 错误');
+                                },
+                                onmessage: function(msg, jsep) {
+                                    console.log('消息:', msg);
+
+                                    if (jsep) {
+                                        console.log('JSEP:', jsep);
+                                        sfutest.createAnswer({
+                                            jsep: jsep,
+                                            media: { audioSend: false, videoSend: false, data: false },
+                                            success: function(jsep) {
+                                                console.log('Answer:', jsep);
+                                                sfutest.send({
+                                                    message: { request: "start" },
+                                                    jsep: jsep
+                                                });
+                                                log('🟢 等待视频...');
+                                            }
+                                        });
+                                    }
+                                },
+                                onremotestream: function(stream) {
+                                    log('🔴 播放中');
+                                    console.log('Stream:', stream);
+                                    Janus.attachMediaStream($('#remotevideo').get(0), stream);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        function subscribe(feedId) {
+            log('🟢 订阅 ' + feedId);
+            sfutest.send({
+                message: {
+                    request: "join",
+                    room: ROOM_ID,
+                    ptype: "subscriber",
+                    feed: feedId
+                }
+            });
+        }
+    </script>
+</body>
+</html>

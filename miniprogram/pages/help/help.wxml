@@ -1,0 +1,145 @@
+<!--pages/help/help.wxml-->
+<view class="container help-page">
+  <!-- 常见问题 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-icon">❓</text>
+      <text class="section-title">常见问题</text>
+    </view>
+
+    <view class="faq-list">
+      <view
+        wx:for="{{faqList}}"
+        wx:key="id"
+        class="faq-item {{item.expanded ? 'expanded' : ''}}"
+        bindtap="toggleFaq"
+        data-id="{{item.id}}"
+      >
+        <view class="faq-question">
+          <text class="question-text">{{item.question}}</text>
+          <text class="expand-icon">{{item.expanded ? '▼' : '▶'}}</text>
+        </view>
+        <view class="faq-answer" wx:if="{{item.expanded}}">
+          {{item.answer}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 联系我们 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-icon">📞</text>
+      <text class="section-title">联系我们</text>
+    </view>
+
+    <view class="contact-list">
+      <view class="contact-item" bindtap="callService">
+        <view class="contact-left">
+          <text class="contact-icon">📱</text>
+          <view class="contact-info">
+            <text class="contact-label">客服热线</text>
+            <text class="contact-value">400-123-4567</text>
+          </view>
+        </view>
+        <text class="contact-arrow">></text>
+      </view>
+
+      <view class="contact-item" bindtap="sendEmail">
+        <view class="contact-left">
+          <text class="contact-icon">✉️</text>
+          <view class="contact-info">
+            <text class="contact-label">邮箱</text>
+            <text class="contact-value">support@example.com</text>
+          </view>
+        </view>
+        <text class="contact-arrow">></text>
+      </view>
+
+      <view class="contact-item">
+        <view class="contact-left">
+          <text class="contact-icon">🕒</text>
+          <view class="contact-info">
+            <text class="contact-label">工作时间</text>
+            <text class="contact-value">9:00-18:00</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 意见反馈 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-icon">💬</text>
+      <text class="section-title">意见反馈</text>
+    </view>
+
+    <view class="feedback-form">
+      <view class="form-item">
+        <text class="form-label">反馈类型</text>
+        <picker mode="selector" range="{{feedbackTypes}}" value="{{feedbackType}}" bindchange="onTypeChange">
+          <view class="picker-value">
+            <text>{{feedbackTypes[feedbackType]}}</text>
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">问题描述</text>
+        <textarea
+          class="feedback-textarea"
+          placeholder="请详细描述您遇到的问题或建议"
+          value="{{feedbackContent}}"
+          bindinput="onContentInput"
+          maxlength="500"
+        ></textarea>
+        <view class="char-count">{{feedbackContent.length}}/500</view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">联系方式（选填）</text>
+        <input
+          class="feedback-input"
+          placeholder="便于我们联系您"
+          value="{{contact}}"
+          bindinput="onContactInput"
+        />
+      </view>
+
+      <button class="submit-btn" bindtap="submitFeedback">提交反馈</button>
+    </view>
+  </view>
+
+  <!-- 使用指南 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-icon">📖</text>
+      <text class="section-title">使用指南</text>
+    </view>
+
+    <view class="guide-list">
+      <view class="guide-item" bindtap="viewGuide" data-type="rent">
+        <text class="guide-icon">🌱</text>
+        <text class="guide-title">如何租用菜地</text>
+        <text class="guide-arrow">></text>
+      </view>
+      <view class="guide-item" bindtap="viewGuide" data-type="service">
+        <text class="guide-icon">🛠️</text>
+        <text class="guide-title">增值服务说明</text>
+        <text class="guide-arrow">></text>
+      </view>
+      <view class="guide-item" bindtap="viewGuide" data-type="monitor">
+        <text class="guide-icon">📹</text>
+        <text class="guide-title">视频监控使用</text>
+        <text class="guide-arrow">></text>
+      </view>
+      <view class="guide-item" bindtap="viewGuide" data-type="community">
+        <text class="guide-icon">💬</text>
+        <text class="guide-title">社区互动指南</text>
+        <text class="guide-arrow">></text>
+      </view>
+    </view>
+  </view>
+</view>

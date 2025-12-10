@@ -1,0 +1,28 @@
+一、主要内容与基本要求
+
+主要内容：
+为“共享菜园”商业模式开发一款专属小程序。实现菜地租用、远程监控、智能提醒、社区互动和一站式服务预约等功能，连接菜园管理方与都市租户，解决租户无法实时照看菜地的痛点。
+
+基本要求：
+1. 实现用户注册、菜地选择与在线租用流程。
+2. 集成实时视频流服务，允许用户远程查看自己菜地的生长情况。
+3. 开发任务提醒系统，根据作物生长周期或管理员设置，向用户推送浇水、施肥等提醒。
+4. 构建社区功能，用户可分享种植成果、交流经验。
+5. 实现一键联系管理员、购买增值服务（如代浇水、代施肥）的功能。
+
+二、重点研究的问题（重点难点）
+1. 低成本实时视频传输方案： 如何选择或自建一个成本可控、延迟低、稳定的视频流服务，是项目商业可行性的关键。
+2. 物联网数据与小程序的集成： 如何将潜在的土壤传感器等物联网设备数据接入小程序，并与提醒系统联动。
+3. 双边市场平台的运营设计： 如何设计产品功能，同时满足租户（便捷、可视化）和管理方（高效、可管理）的需求，促进平台活跃度。
+
+三、参考文献
+1. 微信开放文档. 小程序·实时音视频 [EB/OL].
+2. 微信开放文档. 小程序·消息订阅与推送 [EB/OL].
+3. 阿里云. 视频直播服务产品文档 [EB/OL].
+4. 张凯力. 平台革命：改变世界的商业模式[M]. 中信出版社， 2020.
+5. Gubbi, J., Buyya, R., Marusic, S., & Palaniswami, M. (2013). Internet of Things (IoT): A vision, architectural elements, and future directions. Future Generation Computer Systems, 29(7), 1645-1660.
+6. Atzori, L., Iera, A., & Morabito, G. (2010). The Internet of Things: A survey. Computer Networks, 54(15), 2787-2805.
+7. 王海涛， 李志刚. 基于云平台的智慧农业监控系统设计[J]. 农业工程学报， 2022, 38(10): 220-228.
+8. 陈晓华. 移动互联网时代共享经济平台的用户忠诚度研究[J]. 管理学报， 2021, 18(5): 750-758.
+9. Evans, D. S., & Schmalensee, R. (2016). Matchmakers: The New Economics of Multisided Platforms. Harvard Business Review Press.
+10. Porter, M. E., & Heppelmann, J. E. (2014). How Smart, Connected Products Are Transforming Competition. Harvard Business Review, 92(11), 64-88.

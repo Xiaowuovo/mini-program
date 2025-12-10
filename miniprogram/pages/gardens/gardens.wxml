@@ -1,0 +1,130 @@
+<!--pages/gardens/gardens.wxml-->
+<view class="container gardens-page">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input">
+      <text class="search-icon">🔍</text>
+      <input
+        type="text"
+        placeholder="搜索菜地名称或位置"
+        value="{{keyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+        bindconfirm="onSearch"
+      />
+    </view>
+  </view>
+
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <view
+      class="filter-item {{currentStatus === '' ? 'active' : ''}}"
+      bindtap="onFilterStatus"
+      data-status=""
+    >
+      全部
+    </view>
+    <view
+      class="filter-item {{currentStatus === 'available' ? 'active' : ''}}"
+      bindtap="onFilterStatus"
+      data-status="available"
+    >
+      可租用
+    </view>
+    <view
+      class="filter-item {{currentStatus === 'rented' ? 'active' : ''}}"
+      bindtap="onFilterStatus"
+      data-status="rented"
+    >
+      已租出
+    </view>
+    <view
+      class="filter-item {{currentStatus === 'maintenance' ? 'active' : ''}}"
+      bindtap="onFilterStatus"
+      data-status="maintenance"
+    >
+      维护中
+    </view>
+  </view>
+
+  <!-- 排序栏 -->
+  <view class="sort-bar">
+    <view class="sort-item" bindtap="onSort" data-field="price">
+      价格 <text class="sort-icon">{{sortField === 'price' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}}</text>
+    </view>
+    <view class="sort-item" bindtap="onSort" data-field="area">
+      面积 <text class="sort-icon">{{sortField === 'area' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}}</text>
+    </view>
+  </view>
+
+  <!-- 菜地列表 -->
+  <view class="garden-list">
+    <view
+      wx:for="{{gardens}}"
+      wx:key="id"
+      class="garden-item"
+      bindtap="navigateToDetail"
+      data-id="{{item.id}}"
+    >
+      <image
+        src="{{item.image_url || (item.images && item.images.length > 0 ? item.images[0] : '/images/default-garden.png')}}"
+        class="garden-image"
+        mode="aspectFill"
+        binderror="onImageError"
+        data-index="{{index}}"
+      ></image>
+
+      <view class="garden-info">
+        <view class="garden-header">
+          <text class="garden-name">{{item.name}}</text>
+          <view wx:if="{{item.is_mine}}" class="my-garden-badge">我的菜地</view>
+          <view class="garden-status status-{{item.status}}">
+            {{item.status === 'available' ? '可租用' : item.status === 'rented' ? '已租出' : '维护中'}}
+          </view>
+        </view>
+
+        <view class="garden-desc">
+          <view class="desc-item">
+            <text class="desc-icon">📏</text>
+            <text>{{item.area}}㎡</text>
+          </view>
+          <view class="desc-item">
+            <text class="desc-icon">📍</text>
+            <text>{{item.location || '暂无位置信息'}}</text>
+          </view>
+        </view>
+
+        <view class="garden-footer">
+          <view class="garden-price">
+            <text class="price-number">¥{{item.price}}</text>
+            <text class="price-unit">/月</text>
+          </view>
+          <view class="garden-action">
+            <text wx:if="{{item.status === 'available'}}" class="btn-rent">立即租用</text>
+            <text wx:else class="btn-disabled">不可租用</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!loading && gardens.length === 0}}" class="empty-state">
+    <image src="/images/empty.png"></image>
+    <text>暂无菜地数据</text>
+  </view>
+
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore && !loading}}" class="load-more" bindtap="loadMore">
+    <text>加载更多</text>
+  </view>
+
+  <view wx:if="{{!hasMore && gardens.length > 0}}" class="no-more">
+    <text>没有更多了</text>
+  </view>
+</view>

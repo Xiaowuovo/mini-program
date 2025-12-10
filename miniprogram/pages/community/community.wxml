@@ -1,0 +1,140 @@
+<!--pages/community/community.wxml-->
+<view class="container community-page">
+  <!-- 顶部标签栏 -->
+  <view class="header-tabs">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="tab-item {{currentTab === item.key ? 'active' : ''}}"
+      bindtap="onTabChange"
+      data-tab="{{item.key}}"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <!-- 帖子列表 -->
+  <scroll-view class="post-list" scroll-y>
+    <view
+      wx:for="{{posts}}"
+      wx:key="id"
+      class="post-card"
+      bindtap="navigateToDetail"
+      data-id="{{item.id}}"
+    >
+      <!-- 用户信息 -->
+      <view class="post-header">
+        <image
+          src="{{item.user_avatar || '/images/default-avatar.png'}}"
+          class="user-avatar"
+        ></image>
+        <view class="user-info">
+          <text class="user-name">{{item.user_nickname || '匿名用户'}}</text>
+          <text class="post-time">{{item.created_at}}</text>
+        </view>
+      </view>
+
+      <!-- 帖子内容 -->
+      <view class="post-content">
+        <view class="post-title" wx:if="{{item.title}}">{{item.title}}</view>
+        <view class="post-text">{{item.content}}</view>
+
+        <!-- 图片展示 -->
+        <view class="post-images" wx:if="{{item.images && item.images.length > 0}}">
+          <view
+            wx:if="{{item.images.length === 1}}"
+            class="image-grid single"
+          >
+            <image
+              src="{{item.images[0]}}"
+              mode="aspectFill"
+              class="post-image"
+              catchtap="previewImage"
+              data-urls="{{item.images}}"
+              data-current="{{item.images[0]}}"
+            ></image>
+          </view>
+
+          <view
+            wx:elif="{{item.images.length === 2 || item.images.length === 4}}"
+            class="image-grid two"
+          >
+            <image
+              wx:for="{{item.images}}"
+              wx:key="index"
+              wx:for-item="img"
+              src="{{img}}"
+              mode="aspectFill"
+              class="post-image"
+              catchtap="previewImage"
+              data-urls="{{item.images}}"
+              data-current="{{img}}"
+            ></image>
+          </view>
+
+          <view wx:else class="image-grid three">
+            <image
+              wx:for="{{item.images}}"
+              wx:key="index"
+              wx:for-item="img"
+              src="{{img}}"
+              mode="aspectFill"
+              class="post-image"
+              catchtap="previewImage"
+              data-urls="{{item.images}}"
+              data-current="{{img}}"
+            ></image>
+          </view>
+        </view>
+      </view>
+
+      <!-- 互动栏 -->
+      <view class="post-actions">
+        <view
+          class="action-item {{item.liked ? 'liked' : ''}}"
+          catchtap="handleLike"
+          data-id="{{item.id}}"
+          data-liked="{{item.liked}}"
+        >
+          <text class="action-icon">{{item.liked ? '❤️' : '🤍'}}</text>
+          <text class="action-text">{{item.like_count || 0}}</text>
+        </view>
+
+        <view class="action-item">
+          <text class="action-icon">💬</text>
+          <text class="action-text">{{item.comment_count || 0}}</text>
+        </view>
+
+        <view class="action-item">
+          <text class="action-icon">👁️</text>
+          <text class="action-text">{{item.view_count || 0}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载状态 -->
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{!loading && posts.length === 0}}" class="empty-state">
+      <image src="/images/empty.png" class="empty-image"></image>
+      <text>暂无动态</text>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{hasMore && !loading && posts.length > 0}}" class="load-more">
+      <text>加载更多...</text>
+    </view>
+
+    <view wx:if="{{!hasMore && posts.length > 0}}" class="no-more">
+      <text>没有更多了</text>
+    </view>
+  </scroll-view>
+
+  <!-- 发布按钮 -->
+  <view class="publish-btn" bindtap="navigateToPublish">
+    <text class="publish-icon">✏️</text>
+  </view>
+</view>

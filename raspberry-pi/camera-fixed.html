@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>远程摄像头</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.2.3/adapter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="janus.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #000; overflow: hidden; }
+        #video { width: 100vw; height: 100vh; object-fit: contain; }
+        #status {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: #4CAF50;
+            padding: 10px 20px; border-radius: 20px; font-size: 14px; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">🔴 初始化中...</div>
+    <video id="video" autoplay playsinline muted></video>
+
+    <script>
+        const ROOM_ID = 1234;
+        const SERVER = "https://124.222.14.2:8089/janus";
+
+        let janus, videoroom;
+
+        function log(msg) {
+            console.log('[LOG]', msg);
+            document.getElementById('status').textContent = msg;
+        }
+
+        $(document).ready(function() {
+            Janus.init({
+                debug: "all",
+                callback: function() {
+                    log('🟢 Janus初始化成功');
+
+                    janus = new Janus({
+                        server: SERVER,
+                        success: function() {
+                            log('🟢 已连接服务器');
+                            attachVideoRoom();
+                        },
+                        error: function(err) {
+                            log('🔴 连接失败: ' + err);
+                        }
+                    });
+                }
+            });
+        });
+
+        function attachVideoRoom() {
+            janus.attach({
+                plugin: "janus.plugin.videoroom",
+                success: function(handle) {
+                    videoroom = handle;
+                    log('🟢 插件附加成功');
+                    getParticipants();
+                },
+                error: function(err) {
+                    log('🔴 插件错误: ' + err);
+                },
+                onmessage: function(msg, jsep) {
+                    console.log('📨 收到消息:', msg);
+
+                    // 处理订阅确认
+                    if (msg.videoroom === "attached") {
+                        log('🟢 已附加到发布者');
+                    }
+
+                    // 处理JSEP offer（创建answer）
+                    if (jsep) {
+                        console.log('📞 收到JSEP offer:', jsep);
+
+                        // ⭐ 强制替换内网IP为公网IP
+                        if (jsep.sdp && jsep.sdp.indexOf('10.0.12.3') !== -1) {
+                            console.log('⚠️ 检测到内网IP，强制替换为公网IP');
+                            jsep.sdp = jsep.sdp.replace(/10\.0\.12\.3/g, '124.222.14.2');
+                            console.log('✅ SDP已修正:', jsep.sdp);
+                        }
+
+                        log('🟢 创建WebRTC连接...');
+
+                        videoroom.createAnswer({
+                            jsep: jsep,
+                            media: { audioSend: false, videoSend: false },
+                            success: function(answer) {
+                                console.log('✅ Answer创建成功:', answer);
+
+                                videoroom.send({
+                                    message: { request: "start", room: ROOM_ID },
+                                    jsep: answer
+                                });
+
+                                log('🟢 等待视频流...');
+                            },
+                            error: function(error) {
+                                console.error('❌ Answer失败:', error);
+                                log('🔴 WebRTC错误');
+                            }
+                        });
+                    }
+                },
+                onremotetrack: function(track, mid, on) {
+                    console.log('📺 收到远程轨道:', track, 'mid:', mid, 'on:', on);
+
+                    if (on) {
+                        // 创建或获取 MediaStream
+                        let stream = document.getElementById('video').srcObject;
+                        if (!stream) {
+                            stream = new MediaStream();
+                            document.getElementById('video').srcObject = stream;
+                        }
+                        stream.addTrack(track.clone());
+
+                        log('🔴 正在播放 (' + track.kind + ')');
+                        console.log('✅ 当前stream:', stream, 'tracks:', stream.getTracks());
+                    }
+                },
+                onremotestream: function(stream) {
+                    console.log('📺 收到远程流:', stream);
+                    log('🔴 正在播放');
+                    Janus.attachMediaStream(document.getElementById('video'), stream);
+                }
+            });
+        }
+
+        function getParticipants() {
+            log('🟢 获取参与者列表...');
+
+            videoroom.send({
+                message: {
+                    request: "listparticipants",
+                    room: ROOM_ID
+                },
+                success: function(result) {
+                    console.log('✅ 参与者列表响应:', result);
+
+                    const participants = result.participants || [];
+                    console.log('✅ 参与者数组:', participants);
+
+                    if (participants.length === 0) {
+                        log('⚠️ 房间中暂无参与者');
+                        return;
+                    }
+
+                    // 找到第一个发布者
+                    const publisher = participants.find(p => p.publisher === true);
+
+                    if (!publisher) {
+                        log('⚠️ 没有发现发布者');
+                        return;
+                    }
+
+                    console.log('✅ 发现发布者:', publisher);
+                    log('🟢 发布者 ID: ' + publisher.id + ' (' + publisher.display + ')');
+
+                    // 订阅
+                    subscribeTo(publisher.id);
+                },
+                error: function(err) {
+                    log('🔴 获取参与者失败: ' + err);
+                    console.error('Error:', err);
+                }
+            });
+        }
+
+        function subscribeTo(feedId) {
+            log('🟢 订阅发布者 ' + feedId + '...');
+            console.log('📤 发送订阅请求, feed:', feedId);
+
+            videoroom.send({
+                message: {
+                    request: "join",
+                    room: ROOM_ID,
+                    ptype: "subscriber",
+                    feed: feedId
+                },
+                success: function(result) {
+                    console.log('✅ 订阅成功:', result);
+                    log('🟢 订阅成功，等待视频流...');
+                },
+                error: function(err) {
+                    log('🔴 订阅失败: ' + err);
+                    console.error('订阅错误:', err);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

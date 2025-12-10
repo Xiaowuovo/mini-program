@@ -1,0 +1,122 @@
+<!--pages/about/about.wxml-->
+<view class="container about-page">
+  <!-- Logo和名称 -->
+  <view class="app-header">
+    <image src="/images/logo.png" class="app-logo" mode="aspectFit"></image>
+    <text class="app-name">云端小筑</text>
+    <text class="app-slogan">让每个人都能拥有自己的菜地</text>
+    <text class="app-version">v1.0.0</text>
+  </view>
+
+  <!-- 应用介绍 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="title-icon">📖</text>
+      <text>应用介绍</text>
+    </view>
+    <view class="section-content">
+      <text class="intro-text">
+        云端小筑是一个创新的"互联网+农业"平台，为城市居民提供菜地租赁、远程监控、托管服务等一站式解决方案。让您在繁忙的都市生活中，也能享受田园种植的乐趣。
+      </text>
+    </view>
+  </view>
+
+  <!-- 核心功能 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="title-icon">✨</text>
+      <text>核心功能</text>
+    </view>
+    <view class="feature-list">
+      <view class="feature-item">
+        <text class="feature-icon">🌱</text>
+        <view class="feature-info">
+          <text class="feature-name">菜地租赁</text>
+          <text class="feature-desc">多种面积可选，灵活租期</text>
+        </view>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">📹</text>
+        <view class="feature-info">
+          <text class="feature-name">视频监控</text>
+          <text class="feature-desc">实时查看菜地生长情况</text>
+        </view>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">🛠️</text>
+        <view class="feature-info">
+          <text class="feature-name">增值服务</text>
+          <text class="feature-desc">托管、植保、配送等服务</text>
+        </view>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">⏰</text>
+        <view class="feature-info">
+          <text class="feature-name">智能提醒</text>
+          <text class="feature-desc">浇水、施肥等任务提醒</text>
+        </view>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">💬</text>
+        <view class="feature-info">
+          <text class="feature-name">社区交流</text>
+          <text class="feature-desc">分享经验，结识菜友</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 团队介绍 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="title-icon">👥</text>
+      <text>关于我们</text>
+    </view>
+    <view class="section-content">
+      <text class="team-text">
+        我们是一支充满激情的团队，致力于通过科技手段让都市农业变得更加便捷和有趣。我们相信，每个人都有一个田园梦，云端小筑就是为了帮您实现这个梦想而诞生的。
+      </text>
+    </view>
+  </view>
+
+  <!-- 联系方式 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="title-icon">📞</text>
+      <text>联系我们</text>
+    </view>
+    <view class="contact-list">
+      <view class="contact-item">
+        <text class="contact-label">客服热线</text>
+        <text class="contact-value" bindtap="callPhone">400-123-4567</text>
+      </view>
+      <view class="contact-item">
+        <text class="contact-label">客服邮箱</text>
+        <text class="contact-value" bindtap="copyEmail">support@example.com</text>
+      </view>
+      <view class="contact-item">
+        <text class="contact-label">工作时间</text>
+        <text class="contact-value">周一至周日 9:00-18:00</text>
+      </view>
+      <view class="contact-item">
+        <text class="contact-label">公司地址</text>
+        <text class="contact-value">北京市海淀区xx路xx号</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 法律信息 -->
+  <view class="section">
+    <view class="legal-links">
+      <text class="legal-link" bindtap="showPrivacy">隐私政策</text>
+      <text class="legal-divider">|</text>
+      <text class="legal-link" bindtap="showTerms">用户协议</text>
+    </view>
+  </view>
+
+  <!-- 版权信息 -->
+  <view class="copyright">
+    <text class="copyright-text">© 2024 云端小筑 All Rights Reserved</text>
+    <text class="copyright-text">京ICP备xxxxxxxx号</text>
+  </view>
+</view>

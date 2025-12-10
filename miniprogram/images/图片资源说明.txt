@@ -1,0 +1,49 @@
+图片资源缺失说明
+===================
+
+错误原因：
+app.json 中配置了 tabBar 图标路径，但实际图片文件不存在。
+
+缺失的图片文件：
+----------------
+
+需要在 miniprogram/images/tab/ 目录下创建以下图片：
+
+1. 首页图标
+   - images/tab/home.png (未选中)
+   - images/tab/home-active.png (选中)
+
+2. 菜地图标
+   - images/tab/garden.png (未选中)
+   - images/tab/garden-active.png (选中)
+
+3. 社区图标
+   - images/tab/community.png (未选中)
+   - images/tab/community-active.png (选中)
+
+4. 我的图标
+   - images/tab/profile.png (未选中)
+   - images/tab/profile-active.png (选中)
+
+图片要求：
+---------
+- 格式：PNG（支持透明）
+- 尺寸：81px × 81px（推荐）
+- 未选中：灰色 #999999
+- 选中：绿色 #4CAF50
+
+临时解决方案：
+------------
+1. 使用纯色块代替（见下面的修复方案）
+2. 使用emoji表情代替
+3. 下载免费图标
+
+推荐图标来源：
+------------
+- Iconfont (阿里巴巴图标库): https://www.iconfont.cn
+- Iconify: https://iconify.design
+- Flaticon: https://www.flaticon.com
+
+或者运行：
+fix_miniprogram_images.bat
+自动创建占位图标

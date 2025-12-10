@@ -1,0 +1,90 @@
+<!--pages/publish-post/publish-post.wxml-->
+<view class="container publish-page">
+  <view class="publish-form">
+    <!-- 标题输入 -->
+    <view class="form-item">
+      <textarea
+        class="title-input"
+        placeholder="添加标题（选填）"
+        value="{{title}}"
+        bindinput="onTitleInput"
+        maxlength="50"
+        auto-height
+      ></textarea>
+      <text class="char-count">{{title.length}}/50</text>
+    </view>
+
+    <!-- 内容输入 -->
+    <view class="form-item">
+      <textarea
+        class="content-input"
+        placeholder="分享你的种植经验..."
+        value="{{content}}"
+        bindinput="onContentInput"
+        maxlength="1000"
+        auto-height
+      ></textarea>
+      <text class="char-count">{{content.length}}/1000</text>
+    </view>
+
+    <!-- 图片选择 -->
+    <view class="images-section">
+      <view class="images-grid">
+        <!-- 已选图片 -->
+        <view
+          wx:for="{{images}}"
+          wx:key="index"
+          class="image-item"
+        >
+          <image
+            src="{{item}}"
+            mode="aspectFill"
+            class="preview-image"
+            bindtap="previewImage"
+            data-index="{{index}}"
+          ></image>
+          <view
+            class="delete-icon"
+            catchtap="deleteImage"
+            data-index="{{index}}"
+          >
+            ✕
+          </view>
+        </view>
+
+        <!-- 添加按钮 -->
+        <view
+          wx:if="{{images.length < maxImages}}"
+          class="add-image-btn"
+          bindtap="chooseImage"
+        >
+          <text class="add-icon">📷</text>
+          <text class="add-text">添加图片</text>
+          <text class="add-count">{{images.length}}/{{maxImages}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 发布提示 -->
+    <view class="tips-section">
+      <text class="tips-title">发布须知：</text>
+      <text class="tips-item">· 分享真实的种植经验</text>
+      <text class="tips-item">· 禁止发布广告信息</text>
+      <text class="tips-item">· 尊重他人，文明交流</text>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <button class="save-btn" bindtap="saveDraft">
+      保存草稿
+    </button>
+    <button
+      class="publish-btn"
+      bindtap="publishPost"
+      disabled="{{submitting}}"
+    >
+      {{submitting ? '发布中...' : '发布'}}
+    </button>
+  </view>
+</view>

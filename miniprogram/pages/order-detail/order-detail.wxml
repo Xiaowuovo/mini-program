@@ -1,0 +1,168 @@
+<!--pages/order-detail/order-detail.wxml-->
+<view class="container order-detail-page">
+  <view wx:if="{{loading}}" class="loading">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:if="{{!loading && order}}" class="detail-content">
+    <!-- 订单状态 -->
+    <view class="status-section">
+      <view class="status-header">
+        <view class="status-icon">
+          {{order.status === 'pending' ? '⏰' : order.status === 'paid' ? '✓' : order.status === 'active' ? '🌱' : order.status === 'completed' ? '🎉' : '✗'}}
+        </view>
+        <view class="status-info">
+          <text class="status-text">
+            {{order.status === 'pending' ? '待支付' : order.status === 'paid' ? '已支付' : order.status === 'active' ? '进行中' : order.status === 'completed' ? '已完成' : '已取消'}}
+          </text>
+          <text class="status-desc">
+            {{order.status === 'pending' ? '请尽快完成支付' : order.status === 'paid' ? '订单已支付，等待开始' : order.status === 'active' ? '租期进行中' : order.status === 'completed' ? '感谢您的使用' : '订单已取消'}}
+          </text>
+        </view>
+      </view>
+
+      <!-- 状态步骤条 -->
+      <view class="status-steps" wx:if="{{order.status !== 'cancelled'}}">
+        <view
+          wx:for="{{statusSteps}}"
+          wx:key="key"
+          class="step-item {{order.status === item.key || (order.status === 'completed' && index < 4) ? 'active' : ''}}"
+        >
+          <view class="step-dot"></view>
+          <text class="step-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 菜地信息 -->
+    <view class="garden-section" bindtap="viewGarden">
+      <view class="section-header">
+        <text class="section-title">菜地信息</text>
+        <text class="view-more">查看详情 ></text>
+      </view>
+
+      <view class="garden-card" wx:if="{{order.garden}}">
+        <image
+          src="{{order.garden.images && order.garden.images[0] ? order.garden.images[0] : '/images/default-garden.png'}}"
+          class="garden-image"
+          mode="aspectFill"
+        ></image>
+        <view class="garden-info">
+          <text class="garden-name">{{order.garden.name}}</text>
+          <text class="garden-spec">面积：{{order.garden.area}}㎡</text>
+          <text class="garden-location">位置：{{order.garden.location}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 订单信息 -->
+    <view class="info-section">
+      <view class="section-title">订单信息</view>
+
+      <view class="info-list">
+        <view class="info-item">
+          <text class="info-label">订单编号</text>
+          <view class="info-value-wrapper">
+            <text class="info-value">{{order.orderNo}}</text>
+            <text class="copy-btn" catchtap="copyOrderNo">复制</text>
+          </view>
+        </view>
+
+        <view class="info-item">
+          <text class="info-label">创建时间</text>
+          <text class="info-value">{{order.created_at_formatted}}</text>
+        </view>
+
+        <view class="info-item" wx:if="{{order.status === 'pending'}}">
+          <text class="info-label">支付截止</text>
+          <text class="info-value warning">{{order.payment_deadline}}</text>
+        </view>
+
+        <view class="info-item">
+          <text class="info-label">开始日期</text>
+          <text class="info-value">{{order.start_date}}</text>
+        </view>
+
+        <view class="info-item">
+          <text class="info-label">结束日期</text>
+          <text class="info-value">{{order.end_date}}</text>
+        </view>
+
+        <view class="info-item" wx:if="{{order.notes}}">
+          <text class="info-label">备注信息</text>
+          <text class="info-value">{{order.notes}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 价格明细 -->
+    <view class="price-section">
+      <view class="section-title">价格明细</view>
+
+      <view class="price-list">
+        <view class="price-item">
+          <text class="price-label">租金</text>
+          <text class="price-value">¥{{order.total_price}}</text>
+        </view>
+
+        <view class="price-divider"></view>
+
+        <view class="price-item total">
+          <text class="price-label">实付款</text>
+          <text class="price-value">¥{{order.total_price}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作记录（如果有） -->
+    <view class="timeline-section" wx:if="{{order.timeline && order.timeline.length > 0}}">
+      <view class="section-title">操作记录</view>
+
+      <view class="timeline-list">
+        <view wx:for="{{order.timeline}}" wx:key="index" class="timeline-item">
+          <view class="timeline-dot"></view>
+          <view class="timeline-content">
+            <text class="timeline-title">{{item.title}}</text>
+            <text class="timeline-time">{{item.time}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar" wx:if="{{!loading && order}}">
+    <view class="bar-left">
+      <view class="bar-btn" bindtap="contactService">
+        <image src="/images/icon-service.png" class="bar-icon"></image>
+        <text class="bar-text">客服</text>
+      </view>
+    </view>
+
+    <view class="bar-right">
+      <!-- 待支付状态 -->
+      <block wx:if="{{order.status === 'pending'}}">
+        <button class="action-btn secondary" bindtap="handleCancel">
+          取消订单
+        </button>
+        <button class="action-btn primary" bindtap="handlePay">
+          立即支付
+        </button>
+      </block>
+
+      <!-- 进行中状态 -->
+      <block wx:elif="{{order.status === 'active'}}">
+        <button class="action-btn primary" bindtap="viewGarden">
+          查看菜地
+        </button>
+      </block>
+
+      <!-- 已完成状态 -->
+      <block wx:elif="{{order.status === 'completed'}}">
+        <navigator url="/pages/gardens/gardens" class="action-btn primary">
+          再次租用
+        </navigator>
+      </block>
+    </view>
+  </view>
+</view>

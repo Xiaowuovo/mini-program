@@ -1,0 +1,197 @@
+<!--pages/reminders/reminders.wxml-->
+<view class="container reminders-page">
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-content">
+      <text class="banner-title">智能任务提醒</text>
+      <text class="banner-desc">科学管理，及时提醒</text>
+    </view>
+    <view class="banner-toggle">
+      <text class="toggle-label">智能提醒</text>
+      <switch
+        checked="{{useSmartReminders}}"
+        bindchange="toggleSmartReminders"
+        color="#4CAF50"
+      />
+    </view>
+  </view>
+
+  <!-- 统计卡片 -->
+  <view class="stats-card" wx:if="{{statistics}}">
+    <view class="stat-item" bindtap="onFilterChange" data-status="all">
+      <text class="stat-value">{{statistics.total}}</text>
+      <text class="stat-label">全部任务</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item" bindtap="onFilterChange" data-status="pending">
+      <text class="stat-value pending">{{statistics.pending}}</text>
+      <text class="stat-label">待处理</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item" bindtap="onFilterChange" data-status="completed">
+      <text class="stat-value completed">{{statistics.completed}}</text>
+      <text class="stat-label">已完成</text>
+    </view>
+  </view>
+
+  <!-- 筛选标签 -->
+  <view class="filter-section">
+    <scroll-view class="filter-scroll" scroll-x show-scrollbar="{{false}}">
+      <view class="filter-tabs">
+        <view
+          class="tab-item {{statusFilter === 'all' ? 'active' : ''}}"
+          bindtap="onFilterChange"
+          data-status="all"
+        >
+          <text class="tab-text">全部</text>
+        </view>
+        <view
+          class="tab-item {{statusFilter === 'pending' ? 'active' : ''}}"
+          bindtap="onFilterChange"
+          data-status="pending"
+        >
+          <text class="tab-text">待完成</text>
+        </view>
+        <view
+          class="tab-item {{statusFilter === 'completed' ? 'active' : ''}}"
+          bindtap="onFilterChange"
+          data-status="completed"
+        >
+          <text class="tab-text">已完成</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 提醒列表 -->
+  <view class="reminder-list">
+    <view
+      wx:for="{{reminders}}"
+      wx:key="id"
+      class="reminder-card {{item.status}} priority-{{item.priority}}"
+    >
+      <!-- 卡片头部 -->
+      <view class="reminder-header">
+        <view class="header-left">
+          <view class="icon-wrapper">
+            <text class="reminder-icon">
+              {{item.task_type === 'watering' ? '💧' :
+                item.task_type === 'fertilizing' ? '🌿' :
+                item.task_type === 'weeding' ? '🌾' :
+                item.task_type === 'harvesting' || item.task_type === 'harvest' ? '🥬' :
+                item.task_type === 'pest_check' ? '🐛' :
+                item.task_type === 'environment_alert' ? '⚠️' : '⏰'}}
+            </text>
+          </view>
+          <view class="reminder-info">
+            <text class="reminder-title">{{item.title}}</text>
+            <text class="reminder-garden" wx:if="{{item.garden_name}}">{{item.garden_name}}</text>
+          </view>
+        </view>
+
+        <view class="header-right">
+          <!-- 优先级徽章 -->
+          <view class="priority-badge level-{{item.priority}}" wx:if="{{item.priority}}">
+            {{item.priority === 5 ? '🔴' : item.priority === 4 ? '🟠' : item.priority === 3 ? '🟡' : '🟢'}}
+          </view>
+          <!-- 完成状态 -->
+          <view class="status-icon {{item.status}}" wx:if="{{item.status === 'completed'}}">
+            <text>✓</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 卡片内容 -->
+      <view class="reminder-content">
+        <text class="reminder-desc">{{item.description}}</text>
+
+        <!-- 智能提醒来源 -->
+        <view class="source-tag" wx:if="{{useSmartReminders && item.source}}">
+          <text class="source-icon">
+            {{item.source === 'iot_triggered' ? '🔔' :
+              item.source === 'rule_based' ? '📋' : '✍️'}}
+          </text>
+          <text class="source-text">
+            {{item.source === 'iot_triggered' ? '物联网预警' :
+              item.source === 'rule_based' ? '规则生成' : '手动添加'}}
+          </text>
+        </view>
+
+        <!-- 元数据展示 -->
+        <view class="reminder-metadata" wx:if="{{useSmartReminders && item.metadata}}">
+          <view class="metadata-item" wx:if="{{item.metadata.frequency}}">
+            <text class="metadata-label">建议频率</text>
+            <text class="metadata-value">每{{item.metadata.frequency}}天</text>
+          </view>
+          <view class="metadata-item" wx:if="{{item.metadata.watering_amount}}">
+            <text class="metadata-label">浇水量</text>
+            <text class="metadata-value">{{item.metadata.watering_amount}}升</text>
+          </view>
+          <view class="metadata-item" wx:if="{{item.metadata.fertilizer_type}}">
+            <text class="metadata-label">肥料类型</text>
+            <text class="metadata-value">{{item.metadata.fertilizer_type}}</text>
+          </view>
+          <view class="metadata-item" wx:if="{{item.metadata.value}}">
+            <text class="metadata-label">当前值</text>
+            <text class="metadata-value">{{item.metadata.value}}{{item.metadata.unit}}</text>
+          </view>
+          <view class="metadata-item" wx:if="{{item.metadata.abnormal_reason}}">
+            <text class="metadata-label">异常原因</text>
+            <text class="metadata-value error">{{item.metadata.abnormal_reason}}</text>
+          </view>
+        </view>
+
+        <!-- 时间信息 -->
+        <view class="reminder-time">
+          <text class="time-icon">🕒</text>
+          <text class="time-text">{{item.remind_time}}</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="reminder-actions" wx:if="{{item.status === 'pending'}}">
+        <button
+          class="action-btn ignore"
+          catchtap="handleIgnore"
+          data-id="{{item.id}}"
+        >
+          {{useSmartReminders ? '忽略' : '删除'}}
+        </button>
+        <button
+          class="action-btn complete"
+          catchtap="handleComplete"
+          data-id="{{item.id}}"
+        >
+          标记完成
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!loading && reminders.length === 0}}" class="empty-state">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">
+      {{statusFilter === 'completed' ? '暂无已完成任务' :
+        statusFilter === 'pending' ? '暂无待处理任务' : '暂无任务提醒'}}
+    </text>
+    <button class="add-manual-btn" bindtap="addReminder" wx:if="{{statusFilter === 'all' || statusFilter === 'pending'}}">
+      <text class="add-icon">+</text>
+      <text>添加提醒</text>
+    </button>
+  </view>
+
+  <!-- 悬浮添加按钮 -->
+  <view class="fab-btn" bindtap="addReminder">
+    <text class="fab-icon">+</text>
+  </view>
+
+  <!-- 底部安全区 -->
+  <view class="safe-bottom"></view>
+</view>

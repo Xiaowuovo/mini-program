@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "菜园实时监控",
+  "navigationBarBackgroundColor": "#3cc51f",
+  "navigationBarTextStyle": "white",
+  "disableScroll": true,
+  "enablePullDownRefresh": false
+}

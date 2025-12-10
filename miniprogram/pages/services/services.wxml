@@ -1,0 +1,151 @@
+<!--pages/services/services.wxml-->
+<view class="container services-page">
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-content">
+      <text class="banner-title">专业增值服务</text>
+      <text class="banner-desc">让种菜变得更轻松</text>
+    </view>
+    <image src="/images/service-banner.png" class="banner-image" mode="aspectFill"></image>
+  </view>
+
+  <!-- 服务统计 -->
+  <view class="stats-row">
+    <view class="stat-item">
+      <text class="stat-value">{{stats.totalServices}}</text>
+      <text class="stat-label">服务种类</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">{{stats.totalOrders}}</text>
+      <text class="stat-label">服务订单</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">{{stats.satisfaction}}%</text>
+      <text class="stat-label">满意度</text>
+    </view>
+  </view>
+
+  <!-- 分类标签 -->
+  <view class="category-section">
+    <scroll-view class="tabs-scroll" scroll-x show-scrollbar="{{false}}">
+      <view class="tabs-wrapper">
+        <view
+          wx:for="{{categories}}"
+          wx:key="id"
+          class="tab-item {{currentCategory === item.id ? 'active' : ''}}"
+          bindtap="onCategoryChange"
+          data-category="{{item.id}}"
+        >
+          <text class="tab-icon">{{item.icon}}</text>
+          <text class="tab-name">{{item.name}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 服务列表 -->
+  <view class="service-list">
+    <view
+      wx:for="{{filteredServices}}"
+      wx:key="id"
+      class="service-card"
+      bindtap="viewServiceDetail"
+      data-id="{{item.id}}"
+    >
+      <!-- 服务头部 -->
+      <view class="service-header">
+        <view class="service-icon-wrapper">
+          <text class="service-icon">{{item.icon}}</text>
+        </view>
+        <view class="service-info">
+          <view class="service-name-row">
+            <text class="service-name">{{item.name}}</text>
+            <view wx:if="{{item.isPopular}}" class="popular-badge">热门</view>
+          </view>
+          <text class="service-desc">{{item.description}}</text>
+        </view>
+      </view>
+
+      <!-- 特色标签 -->
+      <view class="features-list" wx:if="{{item.features && item.features.length > 0}}">
+        <view wx:for="{{item.features}}" wx:key="index" wx:for-item="feature" class="feature-tag">
+          <text class="feature-icon">✓</text>
+          <text>{{feature}}</text>
+        </view>
+      </view>
+
+      <!-- 服务详情 -->
+      <view class="service-details">
+        <view class="detail-item">
+          <text class="detail-label">服务时长</text>
+          <text class="detail-value">{{item.duration || '30分钟'}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">服务人员</text>
+          <text class="detail-value">专业团队</text>
+        </view>
+      </view>
+
+      <!-- 底部操作 -->
+      <view class="service-footer">
+        <view class="service-price">
+          <text class="price-symbol">¥</text>
+          <text class="price-number">{{item.price}}</text>
+          <text class="price-unit">/{{item.unit}}</text>
+        </view>
+        <button
+          class="book-btn"
+          bindtap="bookService"
+          data-id="{{item.id}}"
+          catch:tap="bookService"
+        >
+          立即预约
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!loading && filteredServices.length === 0}}" class="empty-state">
+    <text class="empty-icon">📦</text>
+    <text class="empty-text">暂无服务</text>
+    <button class="refresh-btn" bindtap="loadServices">刷新</button>
+  </view>
+
+  <!-- 服务说明 -->
+  <view class="tips-section">
+    <view class="tips-header">
+      <text class="tips-icon">💡</text>
+      <text class="tips-title">服务说明</text>
+    </view>
+    <view class="tips-content">
+      <view class="tip-item">
+        <text class="tip-dot">•</text>
+        <text class="tip-text">所有服务由经验丰富的专业人员提供</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-dot">•</text>
+        <text class="tip-text">服务时间灵活，可根据您的需求预约</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-dot">•</text>
+        <text class="tip-text">支持在线支付和现场支付两种方式</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-dot">•</text>
+        <text class="tip-text">服务完成后可进行评价，帮助我们改进</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全区 -->
+  <view class="safe-bottom"></view>
+</view>

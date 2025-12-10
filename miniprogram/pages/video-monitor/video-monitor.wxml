@@ -1,0 +1,18 @@
+<!--pages/video-monitor/video-monitor.wxml-->
+<view class="camera-container">
+  <!-- web-view 嵌入H5页面 -->
+  <web-view
+    src="{{cameraUrl}}"
+    bindmessage="handleMessage"
+    binderror="handleError"
+    bindload="handleLoad"
+  ></web-view>
+
+  <!-- 加载提示（web-view加载时显示） -->
+  <view class="loading-mask" wx:if="{{loading}}">
+    <view class="loading-content">
+      <view class="spinner"></view>
+      <text class="loading-text">正在加载摄像头...</text>
+    </view>
+  </view>
+</view>

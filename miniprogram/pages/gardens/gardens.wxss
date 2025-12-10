@@ -1,0 +1,249 @@
+/* pages/gardens/gardens.wxss */
+.gardens-page {
+  padding-bottom: 40rpx;
+}
+
+/* 搜索栏 */
+.search-bar {
+  background: #FFFFFF;
+  padding: 20rpx 32rpx;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.search-input {
+  background: #F5F7FA;
+  border-radius: 40rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+  transition: all 0.3s;
+}
+
+.search-input:focus-within {
+  background: #FFFFFF;
+  border: 2rpx solid var(--primary-color);
+  box-shadow: 0 0 0 4rpx rgba(76, 175, 80, 0.1);
+}
+
+.search-icon {
+  font-size: 32rpx;
+  margin-right: 16rpx;
+  opacity: 0.5;
+}
+
+.search-input input {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--text-main);
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  padding: 24rpx 32rpx;
+  background: #FFFFFF;
+  gap: 20rpx;
+  overflow-x: auto;
+  white-space: nowrap;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.filter-item {
+  padding: 12rpx 32rpx;
+  background: #F5F7FA;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  transition: all 0.3s;
+}
+
+.filter-item.active {
+  background: var(--primary-color);
+  color: #FFFFFF;
+  box-shadow: 0 4rpx 12rpx rgba(76, 175, 80, 0.3);
+}
+
+/* 排序栏 */
+.sort-bar {
+  display: flex;
+  background: #FFFFFF;
+  padding: 20rpx 0;
+  margin-bottom: 20rpx;
+}
+
+.sort-item {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.sort-icon {
+  font-size: 20rpx;
+  color: var(--text-light);
+}
+
+/* 菜地列表 */
+.garden-list {
+  padding: 0 32rpx;
+}
+
+.garden-item {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  margin-bottom: 24rpx;
+  padding: 24rpx;
+  display: flex;
+  gap: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.03);
+}
+
+.garden-image {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 16rpx;
+  object-fit: cover;
+}
+
+.garden-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.garden-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.garden-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 8rpx;
+  flex: 1;
+}
+
+.my-garden-badge {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2rpx 8rpx rgba(102, 126, 234, 0.3);
+}
+
+.garden-status {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  white-space: nowrap;
+}
+
+.status-available { background: #E8F5E9; color: #4CAF50; }
+.status-rented { background: #FFEBEE; color: #FF5252; }
+.status-maintenance { background: #FFF3E0; color: #FF9800; }
+
+.garden-desc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.desc-item {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  background: #F7F8FA;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.desc-icon {
+  font-size: 24rpx;
+  margin-right: 8rpx;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.garden-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 16rpx;
+}
+
+.garden-price {
+  display: flex;
+  align-items: baseline;
+}
+
+.price-number {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FF5252;
+}
+
+.price-unit {
+  font-size: 22rpx;
+  color: var(--text-light);
+  margin-left: 4rpx;
+}
+
+.btn-rent {
+  padding: 10rpx 24rpx;
+  background: var(--primary-gradient);
+  color: #FFFFFF;
+  font-size: 24rpx;
+  border-radius: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(76, 175, 80, 0.2);
+}
+
+.btn-disabled {
+  padding: 10rpx 24rpx;
+  background: #F0F0F0;
+  color: #999999;
+  font-size: 24rpx;
+  border-radius: 30rpx;
+}
+
+/* 加载状态 */
+.loading, .load-more, .no-more {
+  text-align: center;
+  padding: 30rpx;
+  font-size: 24rpx;
+  color: var(--text-light);
+}
+
+.empty-state {
+  padding: 100rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-state image {
+  width: 240rpx;
+  height: 240rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.6;
+}
+
+.empty-state text {
+  font-size: 26rpx;
+  color: var(--text-light);
+}

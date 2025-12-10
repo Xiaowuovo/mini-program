@@ -1,0 +1,117 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 轮播图 -->
+  <swiper class="banner-swiper" indicator-dots indicator-color="rgba(255,255,255,0.5)" indicator-active-color="#4CAF50" autoplay circular>
+    <swiper-item wx:for="{{banners}}" wx:key="id">
+      <image src="{{item.image}}" class="banner-image" mode="aspectFill" binderror="onBannerError" data-index="{{index}}"></image>
+    </swiper-item>
+  </swiper>
+
+  <!-- 功能入口 -->
+  <view class="function-grid">
+    <view class="function-item" bindtap="navigateToGardens">
+      <view class="function-icon-wrapper">
+        <image src="/images/icon-garden.png" class="function-icon"></image>
+      </view>
+      <text>租用菜地</text>
+    </view>
+    <view class="function-item" bindtap="navigateToMyGardens">
+      <view class="function-icon-wrapper">
+        <image src="/images/icon-my-garden.png" class="function-icon"></image>
+      </view>
+      <text>我的菜地</text>
+    </view>
+    <view class="function-item" bindtap="navigateToServices">
+      <view class="function-icon-wrapper">
+        <image src="/images/icon-service.png" class="function-icon"></image>
+      </view>
+      <text>增值服务</text>
+    </view>
+    <view class="function-item" bindtap="navigateToReminders">
+      <view class="function-icon-wrapper">
+        <image src="/images/icon-remind.png" class="function-icon"></image>
+      </view>
+      <text>任务提醒</text>
+    </view>
+  </view>
+
+  <!-- 热门菜地 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">热门菜地</text>
+      <text class="section-more" bindtap="navigateToGardens">更多 ></text>
+    </view>
+
+    <view class="garden-list">
+      <view
+        wx:for="{{hotGardens}}"
+        wx:key="id"
+        class="garden-card"
+        bindtap="navigateToGardenDetail"
+        data-id="{{item.id}}"
+      >
+        <image src="{{item.image_url || (item.images && item.images.length > 0 ? item.images[0] : '/images/default-garden.png')}}" class="garden-image" mode="aspectFill" binderror="onGardenImageError" data-index="{{index}}"></image>
+        <view class="garden-info">
+          <view class="garden-name">{{item.name}}</view>
+          <view class="garden-desc">
+            <text class="garden-tag">{{item.area}}㎡</text>
+            <text class="garden-tag">{{item.location}}</text>
+          </view>
+          <view class="garden-footer">
+            <view class="garden-price">
+              <text class="price-number">{{item.price}}</text>
+              <text class="price-unit">元/月</text>
+            </view>
+            <view class="garden-status status-{{item.status}}">
+              {{item.status === 'available' ? '可租用' : item.status === 'rented' ? '已租出' : '维护中'}}
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{hotGardens.length === 0}}" class="empty-state">
+      <image src="/images/empty.png" class="empty-image"></image>
+      <text>暂无热门菜地</text>
+    </view>
+  </view>
+
+  <!-- 最新动态 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">社区动态</text>
+      <text class="section-more" bindtap="navigateToCommunity">更多 ></text>
+    </view>
+
+    <view class="post-list">
+      <view
+        wx:for="{{latestPosts}}"
+        wx:key="id"
+        class="post-card"
+        bindtap="navigateToPostDetail"
+        data-id="{{item.id}}"
+      >
+        <view class="post-header">
+          <image src="{{item.user_avatar || '/images/default-avatar.png'}}" class="user-avatar"></image>
+          <view class="post-user">
+            <view class="user-name">{{item.user_nickname}}</view>
+            <view class="post-time">{{item.created_at}}</view>
+          </view>
+        </view>
+        <view class="post-content">
+          <view class="post-title">{{item.title}}</view>
+          <view class="post-text">{{item.content}}</view>
+        </view>
+        <view class="post-footer">
+          <text class="post-stat">💬 {{item.comment_count}}</text>
+          <text class="post-stat">❤️ {{item.like_count}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{latestPosts.length === 0}}" class="empty-state">
+      <image src="/images/empty.png" class="empty-image"></image>
+      <text>暂无社区动态</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,267 @@
+<!--pages/garden-status/garden-status.wxml-->
+<view class="container garden-status-page">
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:else>
+    <!-- 头部信息卡片 -->
+    <view class="header-card">
+      <view class="garden-header">
+        <view class="garden-name">{{garden.name}}</view>
+        <view class="garden-location">📍 {{garden.location}}</view>
+      </view>
+
+      <view class="rental-info">
+        <view class="rental-item">
+          <text class="label">租期剩余</text>
+          <text class="value highlight">{{rental.remaining_days}}天</text>
+        </view>
+        <view class="rental-item">
+          <text class="label">到期日期</text>
+          <text class="value">{{rental.end_date}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Tab切换 -->
+    <view class="tab-bar">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="index"
+        class="tab-item {{currentTab === index ? 'active' : ''}}"
+        bindtap="onTabChange"
+        data-index="{{index}}"
+      >
+        {{item}}
+      </view>
+    </view>
+
+    <!-- Tab内容 -->
+    <view class="tab-content">
+      <!-- 概览Tab -->
+      <view wx:if="{{currentTab === 0}}" class="tab-panel">
+        <!-- 环境健康卡片 -->
+        <view class="status-card">
+          <view class="card-header">
+            <text class="card-title">🌱 环境健康</text>
+            <view class="health-score" style="color: {{getEnvironmentStatusColor(environment.status)}}">
+              {{environment.health_score}}分
+            </view>
+          </view>
+
+          <view class="health-status">
+            <view class="status-badge" style="background: {{getEnvironmentStatusColor(environment.status)}}">
+              {{getEnvironmentStatusText(environment.status)}}
+            </view>
+          </view>
+
+          <view wx:if="{{environment.alerts && environment.alerts.length > 0}}" class="alerts">
+            <view wx:for="{{environment.alerts}}" wx:key="index" class="alert-item {{item.severity}}">
+              ⚠️ {{item.message}}
+            </view>
+          </view>
+        </view>
+
+        <!-- 种植概况 -->
+        <view class="status-card">
+          <view class="card-header">
+            <text class="card-title">🌾 种植概况</text>
+            <text class="card-subtitle">共{{planting.total_crops}}种作物</text>
+          </view>
+
+          <view wx:if="{{planting.total_crops === 0}}" class="empty-state">
+            <text class="empty-text">暂无种植记录</text>
+            <text class="empty-hint">开始添加您的第一个作物吧</text>
+          </view>
+
+          <view wx:else class="crop-list">
+            <view
+              wx:for="{{planting.records}}"
+              wx:key="id"
+              class="crop-item"
+              bindtap="viewCropDetail"
+              data-crop="{{item}}"
+            >
+              <view class="crop-info">
+                <text class="crop-name">{{item.crop_name}}</text>
+                <text class="crop-stage">{{getStageText(item.current_stage)}}</text>
+              </view>
+              <view class="crop-progress">
+                <view class="progress-bar">
+                  <view class="progress-fill" style="width: {{item.growth_progress}}%"></view>
+                </view>
+                <text class="progress-text">{{item.growth_progress}}%</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 智能提醒 -->
+        <view class="status-card" bindtap="goToReminders">
+          <view class="card-header">
+            <text class="card-title">🔔 智能提醒</text>
+            <text class="card-badge">{{reminders.pending_count}}</text>
+          </view>
+          <view class="card-content">
+            <text class="reminder-text">
+              {{reminders.pending_count > 0 ? '有' + reminders.pending_count + '条待处理提醒' : '暂无待处理提醒'}}
+            </text>
+            <text class="arrow">→</text>
+          </view>
+        </view>
+
+        <!-- 快捷操作 -->
+        <view class="quick-actions">
+          <view class="action-btn" bindtap="goToMonitor">
+            <text class="action-icon">📹</text>
+            <text class="action-text">视频监控</text>
+          </view>
+          <view class="action-btn" bindtap="goToReminders">
+            <text class="action-icon">📝</text>
+            <text class="action-text">管理提醒</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 种植Tab -->
+      <view wx:if="{{currentTab === 1}}" class="tab-panel">
+        <view wx:if="{{planting.total_crops === 0}}" class="empty-state">
+          <image src="/images/empty.png" class="empty-image"></image>
+          <text class="empty-text">还没有种植记录</text>
+        </view>
+
+        <view wx:else>
+          <view
+            wx:for="{{planting.records}}"
+            wx:key="id"
+            class="planting-card"
+          >
+            <view class="planting-header">
+              <text class="crop-name-large">{{item.crop_name}}</text>
+              <view class="stage-badge">{{getStageText(item.current_stage)}}</view>
+            </view>
+
+            <view class="planting-details">
+              <view class="detail-row">
+                <text class="detail-label">种植日期</text>
+                <text class="detail-value">{{item.planting_date}}</text>
+              </view>
+              <view class="detail-row">
+                <text class="detail-label">预计收获</text>
+                <text class="detail-value">{{item.expected_harvest_date}}</text>
+              </view>
+              <view class="detail-row">
+                <text class="detail-label">已生长天数</text>
+                <text class="detail-value">{{item.days_since_planting}}天</text>
+              </view>
+              <view class="detail-row">
+                <text class="detail-label">距离收获</text>
+                <text class="detail-value highlight">{{item.days_to_harvest}}天</text>
+              </view>
+              <view class="detail-row">
+                <text class="detail-label">种植数量</text>
+                <text class="detail-value">{{item.quantity}}</text>
+              </view>
+              <view class="detail-row">
+                <text class="detail-label">占地面积</text>
+                <text class="detail-value">{{item.area}}㎡</text>
+              </view>
+            </view>
+
+            <view class="growth-progress-section">
+              <view class="progress-header">
+                <text>生长进度</text>
+                <text class="progress-percent">{{item.growth_progress}}%</text>
+              </view>
+              <view class="progress-bar-large">
+                <view class="progress-fill-large" style="width: {{item.growth_progress}}%"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 环境Tab -->
+      <view wx:if="{{currentTab === 2}}" class="tab-panel">
+        <view wx:if="{{!environment.iot_data || !environment.iot_data.sensors}}" class="empty-state">
+          <text class="empty-text">暂无物联网数据</text>
+          <text class="empty-hint">传感器正在配置中</text>
+        </view>
+
+        <view wx:else>
+          <view
+            wx:for="{{environment.iot_data.sensors}}"
+            wx:key="id"
+            class="sensor-card {{item.is_abnormal ? 'abnormal' : ''}}"
+            bindtap="viewSensorDetail"
+            data-sensor="{{item}}"
+          >
+            <view class="sensor-header">
+              <text class="sensor-type">
+                {{item.sensor_type === 'temperature' ? '🌡️ 温度' :
+                  item.sensor_type === 'humidity' ? '💧 湿度' :
+                  item.sensor_type === 'soil_moisture' ? '🌱 土壤湿度' :
+                  item.sensor_type === 'light' ? '☀️ 光照' : '传感器'}}
+              </text>
+              <view wx:if="{{item.is_abnormal}}" class="abnormal-badge">异常</view>
+            </view>
+
+            <view class="sensor-value">
+              <text class="value-number">{{item.current_value}}</text>
+              <text class="value-unit">{{item.unit}}</text>
+            </view>
+
+            <view wx:if="{{item.is_abnormal}}" class="abnormal-reason">
+              ⚠️ {{item.abnormal_reason}}
+            </view>
+
+            <view class="sensor-time">
+              最后更新: {{item.last_reading_time}}
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 数据Tab -->
+      <view wx:if="{{currentTab === 3}}" class="tab-panel">
+        <view class="data-section">
+          <view class="data-title">菜地信息</view>
+          <view class="data-item">
+            <text class="data-label">面积</text>
+            <text class="data-value">{{garden.area}}㎡</text>
+          </view>
+          <view class="data-item">
+            <text class="data-label">位置</text>
+            <text class="data-value">{{garden.location}}</text>
+          </view>
+          <view class="data-item">
+            <text class="data-label">状态</text>
+            <text class="data-value">{{garden.status === 'rented' ? '已租用' : '可租用'}}</text>
+          </view>
+        </view>
+
+        <view class="data-section">
+          <view class="data-title">租赁信息</view>
+          <view class="data-item">
+            <text class="data-label">订单号</text>
+            <text class="data-value">{{rental.order_id}}</text>
+          </view>
+          <view class="data-item">
+            <text class="data-label">开始日期</text>
+            <text class="data-value">{{rental.start_date}}</text>
+          </view>
+          <view class="data-item">
+            <text class="data-label">结束日期</text>
+            <text class="data-value">{{rental.end_date}}</text>
+          </view>
+          <view class="data-item">
+            <text class="data-label">剩余天数</text>
+            <text class="data-value highlight">{{rental.remaining_days}}天</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
