@@ -1,0 +1,154 @@
+<!--pages/admin/gardens/gardens.wxml-->
+<view class="container">
+  <!-- 头部操作栏 -->
+  <view class="header-bar">
+    <view class="filter-tabs">
+      <view
+        class="filter-tab {{statusFilter === 'all' ? 'active' : ''}}"
+        data-status="all"
+        bindtap="onFilterChange"
+      >
+        全部
+      </view>
+      <view
+        class="filter-tab {{statusFilter === 'available' ? 'active' : ''}}"
+        data-status="available"
+        bindtap="onFilterChange"
+      >
+        可用
+      </view>
+      <view
+        class="filter-tab {{statusFilter === 'rented' ? 'active' : ''}}"
+        data-status="rented"
+        bindtap="onFilterChange"
+      >
+        已租
+      </view>
+      <view
+        class="filter-tab {{statusFilter === 'maintenance' ? 'active' : ''}}"
+        data-status="maintenance"
+        bindtap="onFilterChange"
+      >
+        维护中
+      </view>
+    </view>
+    <button class="add-btn" bindtap="onShowAddDialog">
+      <text>➕ 添加菜地</text>
+    </button>
+  </view>
+
+  <!-- 菜地列表 -->
+  <view class="gardens-list">
+    <view
+      class="garden-card"
+      wx:for="{{filteredGardens}}"
+      wx:key="id"
+    >
+      <view class="garden-header">
+        <view class="garden-name">{{item.name}}</view>
+        <view class="status-badge status-{{item.status}}">
+          {{item.status === 'available' ? '可用' : item.status === 'rented' ? '已租' : '维护中'}}
+        </view>
+      </view>
+
+      <view class="garden-info">
+        <view class="info-row">
+          <text class="label">位置：</text>
+          <text>{{item.location}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">面积：</text>
+          <text>{{item.area}}㎡</text>
+        </view>
+        <view class="info-row">
+          <text class="label">价格：</text>
+          <text class="price">¥{{item.price}}/月</text>
+        </view>
+        <view class="info-row" wx:if="{{item.current_tenant}}">
+          <text class="label">租户：</text>
+          <text>{{item.current_tenant.nickname}}</text>
+        </view>
+      </view>
+
+      <view class="garden-actions">
+        <button
+          class="action-btn status-btn"
+          data-id="{{item.id}}"
+          bindtap="onStatusChange"
+        >
+          修改状态
+        </button>
+        <button
+          class="action-btn edit-btn"
+          data-id="{{item.id}}"
+          bindtap="onEdit"
+        >
+          编辑
+        </button>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{filteredGardens.length === 0 && !isLoading}}">
+      <text class="empty-icon">🌱</text>
+      <text class="empty-text">暂无菜地</text>
+    </view>
+  </view>
+
+  <!-- 添加菜地弹窗 -->
+  <view class="dialog-mask" wx:if="{{showAddDialog}}" bindtap="onHideAddDialog">
+    <view class="dialog" catchtap="doNothing">
+      <view class="dialog-title">添加新菜地</view>
+
+      <view class="form-group">
+        <text class="form-label">名称</text>
+        <input
+          class="form-input"
+          placeholder="请输入菜地名称"
+          data-field="name"
+          value="{{newGarden.name}}"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">位置</text>
+        <input
+          class="form-input"
+          placeholder="请输入菜地位置"
+          data-field="location"
+          value="{{newGarden.location}}"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">面积（㎡）</text>
+        <input
+          class="form-input"
+          type="digit"
+          placeholder="请输入面积"
+          data-field="area"
+          value="{{newGarden.area}}"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">价格（元/月）</text>
+        <input
+          class="form-input"
+          type="digit"
+          placeholder="请输入租金"
+          data-field="price"
+          value="{{newGarden.price}}"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="dialog-actions">
+        <button class="dialog-btn cancel-btn" bindtap="onHideAddDialog">取消</button>
+        <button class="dialog-btn confirm-btn" bindtap="onConfirmAdd">确定</button>
+      </view>
+    </view>
+  </view>
+</view>

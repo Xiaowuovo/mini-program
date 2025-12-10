@@ -1,0 +1,118 @@
+<!--pages/admin/orders/orders.wxml-->
+<view class="container">
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <scroll-view class="filter-scroll" scroll-x>
+      <view class="filter-tabs">
+        <view
+          class="filter-tab {{statusFilter === 'all' ? 'active' : ''}}"
+          data-status="all"
+          bindtap="onFilterChange"
+        >
+          全部
+        </view>
+        <view
+          class="filter-tab {{statusFilter === 'pending' ? 'active' : ''}}"
+          data-status="pending"
+          bindtap="onFilterChange"
+        >
+          待确认
+        </view>
+        <view
+          class="filter-tab {{statusFilter === 'confirmed' ? 'active' : ''}}"
+          data-status="confirmed"
+          bindtap="onFilterChange"
+        >
+          已确认
+        </view>
+        <view
+          class="filter-tab {{statusFilter === 'in_progress' ? 'active' : ''}}"
+          data-status="in_progress"
+          bindtap="onFilterChange"
+        >
+          进行中
+        </view>
+        <view
+          class="filter-tab {{statusFilter === 'completed' ? 'active' : ''}}"
+          data-status="completed"
+          bindtap="onFilterChange"
+        >
+          已完成
+        </view>
+        <view
+          class="filter-tab {{statusFilter === 'cancelled' ? 'active' : ''}}"
+          data-status="cancelled"
+          bindtap="onFilterChange"
+        >
+          已取消
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 订单列表 -->
+  <view class="orders-list">
+    <view
+      class="order-card"
+      wx:for="{{filteredOrders}}"
+      wx:key="id"
+    >
+      <view class="order-header">
+        <view class="order-id">订单 #{{item.id}}</view>
+        <view class="status-badge status-{{item.status}}">
+          {{statusMap[item.status]}}
+        </view>
+      </view>
+
+      <view class="order-info">
+        <view class="info-row">
+          <text class="label">类型：</text>
+          <text>{{item.type === 'rental' ? '菜地租赁' : '服务订单'}}</text>
+        </view>
+        <view class="info-row" wx:if="{{item.garden}}">
+          <text class="label">菜地：</text>
+          <text>{{item.garden.name}}</text>
+        </view>
+        <view class="info-row" wx:if="{{item.service}}">
+          <text class="label">服务：</text>
+          <text>{{item.service.name}}</text>
+        </view>
+        <view class="info-row" wx:if="{{item.user}}">
+          <text class="label">用户：</text>
+          <text>{{item.user.nickname}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">金额：</text>
+          <text class="price">¥{{item.total_price}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">创建时间：</text>
+          <text class="date">{{item.created_at}}</text>
+        </view>
+      </view>
+
+      <view class="order-actions">
+        <button
+          class="action-btn detail-btn"
+          data-id="{{item.id}}"
+          bindtap="onViewDetail"
+        >
+          查看详情
+        </button>
+        <button
+          class="action-btn status-btn"
+          data-id="{{item.id}}"
+          data-current-status="{{item.status}}"
+          bindtap="onStatusChange"
+        >
+          更新状态
+        </button>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{filteredOrders.length === 0 && !isLoading}}">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无订单</text>
+    </view>
+  </view>
+</view>

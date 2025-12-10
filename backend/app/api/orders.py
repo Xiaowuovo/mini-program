@@ -275,3 +275,92 @@ async def cancel_order(
     db.refresh(order)
 
     return order
+
+
+# ===== 管理员专用API =====
+
+@router.get("/admin/all", response_model=OrderListResponse, summary="获取所有订单（管理员）")
+async def get_all_orders(
+    skip: int = Query(0, ge=0, description="跳过数量"),
+    limit: int = Query(50, ge=1, le=100, description="每页数量"),
+    status: Optional[str] = Query(None, description="订单状态筛选"),
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """获取所有订单列表（管理员权限）"""
+
+    query = db.query(Order)
+
+    # 状态筛选
+    if status and status.strip():
+        try:
+            query = query.filter(Order.status == OrderStatus(status))
+        except ValueError:
+            pass
+
+    # 获取总数
+    total = query.count()
+
+    # 分页查询
+    orders = query.order_by(Order.created_at.desc()).offset(skip).limit(limit).all()
+
+    # 构造详情列表（包含菜地和用户信息）
+    order_details = []
+    for order in orders:
+        garden = db.query(Garden).filter(Garden.id == order.garden_id).first()
+        user = db.query(User).filter(User.id == order.user_id).first()
+
+        order_dict = OrderDetail.from_orm(order).dict()
+        if garden:
+            order_dict["garden_name"] = garden.name
+            order_dict["garden_location"] = garden.location
+        if user:
+            order_dict["user_nickname"] = user.nickname
+
+        order_details.append(OrderDetail(**order_dict))
+
+    return OrderListResponse(total=total, items=order_details)
+
+
+@router.put("/admin/{order_id}/status", response_model=OrderSchema, summary="更新订单状态（管理员）")
+async def update_order_status(
+    order_id: int,
+    new_status: str = Query(..., description="新状态"),
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """更新订单状态（管理员权限）"""
+
+    order = db.query(Order).filter(Order.id == order_id).first()
+
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="订单不存在"
+        )
+
+    try:
+        order_status = OrderStatus(new_status)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="无效的订单状态"
+        )
+
+    # 更新订单状态
+    old_status = order.status
+    order.status = order_status
+
+    # 根据状态变化更新菜地状态
+    garden = db.query(Garden).filter(Garden.id == order.garden_id).first()
+    if garden:
+        if order_status == OrderStatus.PAID and old_status != OrderStatus.PAID:
+            garden.status = GardenStatus.RENTED
+            order.payment_time = datetime.now()
+        elif order_status == OrderStatus.CANCELLED and old_status == OrderStatus.PAID:
+            garden.status = GardenStatus.AVAILABLE
+
+    db.commit()
+    db.refresh(order)
+
+    return order

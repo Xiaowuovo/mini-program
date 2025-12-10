@@ -1,0 +1,65 @@
+<!--pages/admin/dashboard/dashboard.wxml-->
+<view class="admin-container">
+  <!-- 头部 -->
+  <view class="admin-header">
+    <view class="header-top">
+      <view class="welcome">
+        <text class="welcome-title">管理后台</text>
+        <text class="welcome-desc">欢迎，{{userInfo.nickname || '管理员'}}</text>
+      </view>
+      <view class="logout-btn" bindtap="onLogout">
+        <text class="logout-icon">🚪</text>
+        <text>退出</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据统计卡片 -->
+  <view class="stats-section">
+    <view class="section-title">数据概览</view>
+    <view class="stats-grid">
+      <view class="stat-card">
+        <view class="stat-icon">🌱</view>
+        <view class="stat-value">{{stats.totalGardens}}</view>
+        <view class="stat-label">总菜地数</view>
+        <view class="stat-desc">已出租 {{stats.rentedGardens}}</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-icon">📋</view>
+        <view class="stat-value">{{stats.totalOrders}}</view>
+        <view class="stat-label">总订单数</view>
+        <view class="stat-desc">待处理 {{stats.pendingOrders}}</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-icon">👥</view>
+        <view class="stat-value">{{stats.totalUsers}}</view>
+        <view class="stat-label">注册用户</view>
+        <view class="stat-desc">活跃用户</view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-icon">💰</view>
+        <view class="stat-value">¥{{stats.totalRevenue}}</view>
+        <view class="stat-label">总收入</view>
+        <view class="stat-desc">本月收入</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="section-title">管理功能</view>
+    <view class="menu-grid">
+      <view
+        class="menu-item"
+        wx:for="{{menuItems}}"
+        wx:key="id"
+        data-url="{{item.url}}"
+        bindtap="onMenuTap"
+      >
+        <view class="menu-icon">{{item.icon}}</view>
+        <view class="menu-title">{{item.title}}</view>
+        <view class="menu-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+</view>

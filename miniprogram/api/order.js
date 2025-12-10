@@ -66,11 +66,35 @@ function completeOrder(id) {
   })
 }
 
+/**
+ * 获取所有订单（管理员）
+ */
+function getAllOrders(params = {}) {
+  return request({
+    url: '/orders/admin/all',
+    method: 'GET',
+    data: params
+  })
+}
+
+/**
+ * 更新订单状态（管理员）
+ */
+function updateOrderStatus(id, status) {
+  return request({
+    url: `/orders/admin/${id}/status`,
+    method: 'PUT',
+    data: { new_status: status }
+  })
+}
+
 module.exports = {
   getOrderList,
   getOrderDetail,
   createOrder,
   cancelOrder,
   payOrder,
-  completeOrder
+  completeOrder,
+  getAllOrders,
+  updateOrderStatus
 }

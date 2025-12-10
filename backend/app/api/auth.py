@@ -16,6 +16,7 @@ router = APIRouter()
 class TestLoginRequest(BaseModel):
     """测试登录请求"""
     nickname: str = "测试用户"
+    role: str = "tenant"  # tenant 或 admin
 
 
 @router.post("/wechat-login", response_model=LoginResponse, summary="微信登录")
@@ -78,9 +79,10 @@ async def test_login(
     测试登录接口（仅供开发和演示使用）
 
     无需微信code，直接创建或获取测试用户
+    支持创建管理员账号（role=admin）或普通租户（role=tenant）
     """
     # 使用固定的测试openid
-    test_openid = "test_openid_" + login_data.nickname
+    test_openid = "test_openid_" + login_data.nickname + "_" + login_data.role
 
     # 查询用户
     user = db.query(User).filter(User.openid == test_openid).first()
@@ -90,11 +92,17 @@ async def test_login(
         user = User(
             openid=test_openid,
             nickname=login_data.nickname,
-            role="tenant"
+            role=login_data.role
         )
         db.add(user)
         db.commit()
         db.refresh(user)
+    else:
+        # 如果用户存在但角色不匹配，更新角色（方便测试）
+        if user.role != login_data.role:
+            user.role = login_data.role
+            db.commit()
+            db.refresh(user)
 
     # 生成JWT令牌（sub必须是字符串）
     access_token = create_access_token(data={"sub": str(user.id)})

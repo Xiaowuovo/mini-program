@@ -31,6 +31,39 @@ Page({
       })
   },
 
+  onAdminLogin() {
+    if (this.data.isLoading) return
+    this.setData({ isLoading: true })
+    wx.showLoading({ title: '管理员登录中...' })
+
+    // 调用后端管理员测试登录接口
+    testLogin('管理员', 'admin')
+      .then(res => {
+        // 检查用户角色
+        if (res.user.role !== 'admin') {
+          wx.hideLoading()
+          this.setData({ isLoading: false })
+          wx.showModal({
+            title: '权限不足',
+            content: '该账号不是管理员账号，无法访问管理端',
+            showCancel: false
+          })
+          return
+        }
+        this.handleAdminLoginSuccess(res)
+      })
+      .catch(err => {
+        console.error('管理员登录失败:', err)
+        wx.hideLoading()
+        this.setData({ isLoading: false })
+        wx.showModal({
+          title: '登录失败',
+          content: '无法连接到后端服务\n\n错误: ' + (err.message || '未知错误'),
+          showCancel: false
+        })
+      })
+  },
+
   handleLoginSuccess(res) {
     wx.hideLoading()
     this.setData({ isLoading: false })
@@ -51,6 +84,32 @@ Page({
 
     setTimeout(() => {
       this.navigateToHome()
+    }, 1500)
+  },
+
+  handleAdminLoginSuccess(res) {
+    wx.hideLoading()
+    this.setData({ isLoading: false })
+
+    // 保存管理员Token和用户信息
+    if (app && app.saveLoginInfo) {
+      app.saveLoginInfo(res.access_token, res.user)
+    } else {
+      wx.setStorageSync('token', res.access_token)
+      wx.setStorageSync('userInfo', res.user)
+    }
+
+    wx.showToast({
+      title: '管理员登录成功',
+      icon: 'success',
+      duration: 1500
+    })
+
+    setTimeout(() => {
+      // 跳转到管理端首页
+      wx.redirectTo({
+        url: '/pages/admin/dashboard/dashboard'
+      })
     }, 1500)
   },
 

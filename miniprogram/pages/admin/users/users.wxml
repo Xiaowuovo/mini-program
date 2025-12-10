@@ -1,0 +1,80 @@
+<!--pages/admin/users/users.wxml-->
+<view class="container">
+  <!-- 搜索和筛选 -->
+  <view class="search-bar">
+    <view class="search-input-wrapper">
+      <input
+        class="search-input"
+        placeholder="搜索用户昵称或手机号"
+        bindinput="onSearchInput"
+        value="{{searchKeyword}}"
+      />
+      <text class="search-icon">🔍</text>
+    </view>
+
+    <view class="filter-tabs">
+      <view
+        class="filter-tab {{roleFilter === 'all' ? 'active' : ''}}"
+        data-role="all"
+        bindtap="onFilterChange"
+      >
+        全部
+      </view>
+      <view
+        class="filter-tab {{roleFilter === 'tenant' ? 'active' : ''}}"
+        data-role="tenant"
+        bindtap="onFilterChange"
+      >
+        租户
+      </view>
+      <view
+        class="filter-tab {{roleFilter === 'admin' ? 'active' : ''}}"
+        data-role="admin"
+        bindtap="onFilterChange"
+      >
+        管理员
+      </view>
+    </view>
+  </view>
+
+  <!-- 用户列表 -->
+  <view class="users-list">
+    <view
+      class="user-card"
+      wx:for="{{filteredUsers}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onViewDetail"
+    >
+      <view class="user-header">
+        <view class="user-avatar">
+          {{item.nickname.substring(0, 1)}}
+        </view>
+        <view class="user-info">
+          <view class="user-name">
+            {{item.nickname}}
+            <view class="role-badge role-{{item.role}}">
+              {{item.role === 'admin' ? '管理员' : '租户'}}
+            </view>
+          </view>
+          <view class="user-phone" wx:if="{{item.phone}}">📱 {{item.phone}}</view>
+          <view class="user-meta">
+            <text>注册时间：{{item.created_at}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="user-stats">
+        <view class="stat-item">
+          <view class="stat-value">{{item.total_orders || 0}}</view>
+          <view class="stat-label">订单数</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{filteredUsers.length === 0 && !isLoading}}">
+      <text class="empty-icon">👥</text>
+      <text class="empty-text">暂无用户</text>
+    </view>
+  </view>
+</view>

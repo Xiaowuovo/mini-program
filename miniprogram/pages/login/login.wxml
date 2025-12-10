@@ -38,6 +38,12 @@
       微信一键登录
     </button>
 
+    <!-- 管理端入口 -->
+    <view class="admin-entry" bindtap="onAdminLogin">
+      <text class="admin-icon">⚙️</text>
+      <text class="admin-text">管理端登录</text>
+    </view>
+
     <view class="agreement">
       <text>登录即表示同意</text>
       <text class="link" bindtap="onViewAgreement">《用户协议》</text>

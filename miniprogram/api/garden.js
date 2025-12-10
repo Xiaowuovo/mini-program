@@ -44,8 +44,16 @@ function deleteGarden(id) {
   return del(`/gardens/${id}`)
 }
 
+/**
+ * 获取菜地列表（兼容性别名）
+ */
+function getGardens() {
+  return getGardenList()
+}
+
 module.exports = {
   getGardenList,
+  getGardens,
   getMyGardens,
   getGardenDetail,
   createGarden,

@@ -1,0 +1,115 @@
+<!--pages/admin/stats/stats.wxml-->
+<view class="container">
+  <!-- 总览卡片 -->
+  <view class="overview-section">
+    <view class="section-header">
+      <text class="section-title">数据总览</text>
+      <button class="refresh-btn" bindtap="onRefresh">🔄</button>
+    </view>
+
+    <view class="overview-grid">
+      <view class="overview-card">
+        <view class="card-label">菜地出租率</view>
+        <view class="card-value">{{overview.rentRate}}%</view>
+        <view class="card-detail">{{overview.rentedGardens}}/{{overview.totalGardens}} 已出租</view>
+      </view>
+      <view class="overview-card">
+        <view class="card-label">订单完成率</view>
+        <view class="card-value">{{overview.completedOrders}}/{{overview.totalOrders}}</view>
+        <view class="card-detail">总订单数</view>
+      </view>
+      <view class="overview-card">
+        <view class="card-label">总收入</view>
+        <view class="card-value revenue">¥{{overview.totalRevenue}}</view>
+        <view class="card-detail">本月 ¥{{overview.monthRevenue}}</view>
+      </view>
+      <view class="overview-card">
+        <view class="card-label">用户活跃度</view>
+        <view class="card-value">{{overview.activeUsers}}/{{overview.totalUsers}}</view>
+        <view class="card-detail">活跃用户</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 菜地状态统计 -->
+  <view class="stat-section">
+    <view class="section-title">菜地状态分布</view>
+    <view class="pie-chart">
+      <view class="chart-item">
+        <view class="chart-bar available" style="width: {{gardenStats.available / overview.totalGardens * 100}}%"></view>
+        <view class="chart-label">
+          <text class="label-color available">●</text>
+          <text>可用 ({{gardenStats.available}})</text>
+        </view>
+      </view>
+      <view class="chart-item">
+        <view class="chart-bar rented" style="width: {{gardenStats.rented / overview.totalGardens * 100}}%"></view>
+        <view class="chart-label">
+          <text class="label-color rented">●</text>
+          <text>已租 ({{gardenStats.rented}})</text>
+        </view>
+      </view>
+      <view class="chart-item">
+        <view class="chart-bar maintenance" style="width: {{gardenStats.maintenance / overview.totalGardens * 100}}%"></view>
+        <view class="chart-label">
+          <text class="label-color maintenance">●</text>
+          <text>维护 ({{gardenStats.maintenance}})</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 订单状态统计 -->
+  <view class="stat-section">
+    <view class="section-title">订单状态分布</view>
+    <view class="order-stats">
+      <view class="order-stat-item">
+        <view class="stat-count pending">{{orderStats.pending}}</view>
+        <view class="stat-name">待确认</view>
+      </view>
+      <view class="order-stat-item">
+        <view class="stat-count confirmed">{{orderStats.confirmed}}</view>
+        <view class="stat-name">已确认</view>
+      </view>
+      <view class="order-stat-item">
+        <view class="stat-count in-progress">{{orderStats.in_progress}}</view>
+        <view class="stat-name">进行中</view>
+      </view>
+      <view class="order-stat-item">
+        <view class="stat-count completed">{{orderStats.completed}}</view>
+        <view class="stat-name">已完成</view>
+      </view>
+      <view class="order-stat-item">
+        <view class="stat-count cancelled">{{orderStats.cancelled}}</view>
+        <view class="stat-name">已取消</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 收入趋势 -->
+  <view class="stat-section">
+    <view class="section-title">近7日收入趋势</view>
+    <view class="trend-chart">
+      <view class="trend-item" wx:for="{{revenueTrend}}" wx:key="date">
+        <view class="trend-bar" style="height: {{item.amount / 2500 * 200}}rpx">
+          <text class="trend-amount">¥{{item.amount}}</text>
+        </view>
+        <text class="trend-date">{{item.date}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 热门菜地 -->
+  <view class="stat-section">
+    <view class="section-title">热门菜地 TOP5</view>
+    <view class="top-list">
+      <view class="top-item" wx:for="{{topGardens}}" wx:key="name">
+        <view class="top-rank rank-{{index + 1}}">{{index + 1}}</view>
+        <view class="top-info">
+          <view class="top-name">{{item.name}}</view>
+          <view class="top-detail">{{item.orders}}笔订单 · ¥{{item.revenue}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
