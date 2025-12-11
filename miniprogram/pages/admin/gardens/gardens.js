@@ -100,8 +100,11 @@ Page({
 
   onEdit(e) {
     const { id } = e.currentTarget.dataset
-    wx.navigateTo({
-      url: `/pages/admin/garden-edit/garden-edit?id=${id}`
+    wx.showModal({
+      title: '编辑菜地',
+      content: '菜地编辑功能正在开发中。\n\n如需修改菜地信息，请联系系统管理员。',
+      showCancel: false,
+      confirmText: '知道了'
     })
   },
 

@@ -266,10 +266,19 @@ Page({
    * 查看知识详情
    */
   viewKnowledge(e) {
-    const id = e.currentTarget.dataset.id
-    wx.showToast({
-      title: '功能开发中',
-      icon: 'none'
+    const { id, title } = e.currentTarget.dataset
+    const knowledgeMap = {
+      1: '🌱 种植指南\n\n1. 选择合适的季节和作物\n2. 准备好土壤和工具\n3. 按照间距种植\n4. 定期浇水和施肥\n5. 注意病虫害防治',
+      2: '💧 浇水技巧\n\n1. 早晚浇水最佳\n2. 避免中午浇水\n3. 根据天气调整频率\n4. 浇透不浇半截水\n5. 注意排水防涝',
+      3: '🌿 施肥方法\n\n1. 使用有机肥为主\n2. 薄肥勤施原则\n3. 避免烧苗\n4. 注意氮磷钾平衡\n5. 根据生长期调整',
+      4: '🐛 病虫害防治\n\n1. 以预防为主\n2. 及时清除病叶\n3. 使用生物防治\n4. 合理使用农药\n5. 保持通风良好'
+    }
+
+    wx.showModal({
+      title: title,
+      content: knowledgeMap[id] || '更多知识正在整理中...',
+      showCancel: false,
+      confirmText: '知道了'
     })
   },
 
@@ -277,9 +286,11 @@ Page({
    * 跳转到知识库
    */
   navigateToKnowledge() {
-    wx.showToast({
-      title: '功能开发中',
-      icon: 'none'
+    wx.showModal({
+      title: '种植知识库',
+      content: '更多种植知识请查看：\n\n• 社区动态中的经验分享\n• 增值服务中的专家指导\n• 帮助中心的使用指南',
+      showCancel: false,
+      confirmText: '知道了'
     })
   }
 })

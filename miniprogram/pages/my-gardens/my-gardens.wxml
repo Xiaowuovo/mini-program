@@ -69,7 +69,7 @@
         <view wx:if="{{item.current_order.is_active}}" class="action-btn secondary" bindtap="addPlanting" data-id="{{item.id}}" data-name="{{item.name}}">
           添加作物
         </view>
-        <view wx:if="{{item.current_order.is_active && item.video_stream_url}}" class="action-btn secondary" bindtap="viewMonitor" data-id="{{item.id}}">
+        <view wx:if="{{item.current_order.is_active && item.video_stream_url}}" class="action-btn secondary" bindtap="viewMonitor" data-id="{{item.id}}" data-name="{{item.name}}">
           视频监控
         </view>
         <view class="action-btn primary" bindtap="{{item.current_order.is_active ? 'viewGardenDetail' : 'renewGarden'}}" data-id="{{item.id}}">

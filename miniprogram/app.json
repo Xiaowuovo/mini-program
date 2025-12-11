@@ -21,7 +21,6 @@
     "pages/settings/settings",
     "pages/help/help",
     "pages/about/about",
-    "pages/video-monitor/video-monitor",
     "pages/camera/camera",
     "pages/admin/dashboard/dashboard",
     "pages/admin/gardens/gardens",

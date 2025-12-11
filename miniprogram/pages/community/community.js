@@ -14,10 +14,28 @@ Page({
     pageSize: 10,
     total: 0,
     loading: false,
-    hasMore: true
+    hasMore: true,
+    filterType: null // null, 'mine', 'favorite'
   },
 
   onLoad(options) {
+    // 支持从profile页面跳转的参数
+    const { mine, favorite } = options
+
+    if (mine === 'true') {
+      wx.setNavigationBarTitle({ title: '我的动态' })
+      this.setData({
+        filterType: 'mine',
+        currentTab: 'latest' // 我的动态默认按时间排序
+      })
+    } else if (favorite === 'true') {
+      wx.setNavigationBarTitle({ title: '我的收藏' })
+      this.setData({
+        filterType: 'favorite',
+        currentTab: 'latest' // 收藏默认按时间排序
+      })
+    }
+
     this.loadPosts()
   },
 
@@ -58,6 +76,14 @@ Page({
       skip: (this.data.page - 1) * this.data.pageSize,
       limit: this.data.pageSize,
       sort: this.data.currentTab === 'hot' ? 'likes' : 'created_at'
+    }
+
+    // 添加筛选参数
+    const { filterType } = this.data
+    if (filterType === 'mine') {
+      params.user_only = true // API参数：只显示我的
+    } else if (filterType === 'favorite') {
+      params.favorites_only = true // API参数：只显示收藏的
     }
 
     getPostList(params)

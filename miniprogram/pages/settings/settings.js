@@ -46,8 +46,22 @@ Page({
   changePassword() {
     wx.showModal({
       title: '修改密码',
-      content: '该功能正在开发中',
-      showCancel: false
+      content: '如需修改密码，请联系客服：\n\n电话：400-123-4567\n邮箱：support@example.com\n\n客服将协助您完成密码重置。',
+      cancelText: '取消',
+      confirmText: '联系客服',
+      success: (res) => {
+        if (res.confirm) {
+          wx.makePhoneCall({
+            phoneNumber: '4001234567',
+            fail: () => {
+              wx.showToast({
+                title: '拨号失败',
+                icon: 'none'
+              })
+            }
+          })
+        }
+      }
     })
   },
 
@@ -56,9 +70,23 @@ Page({
    */
   bindPhone() {
     wx.showModal({
-      title: '手机绑定',
-      content: '该功能正在开发中',
-      showCancel: false
+      title: '绑定手机',
+      content: '如需绑定或更换手机号，请联系客服：\n\n电话：400-123-4567\n邮箱：support@example.com\n\n客服将协助您完成手机号绑定。',
+      cancelText: '取消',
+      confirmText: '联系客服',
+      success: (res) => {
+        if (res.confirm) {
+          wx.makePhoneCall({
+            phoneNumber: '4001234567',
+            fail: () => {
+              wx.showToast({
+                title: '拨号失败',
+                icon: 'none'
+              })
+            }
+          })
+        }
+      }
     })
   },
 

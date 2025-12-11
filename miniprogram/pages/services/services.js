@@ -375,16 +375,16 @@ Page({
       wx.showModal({
         title: '预约成功',
         content: `您已成功预约【${service.name}】服务！\n\n订单编号：${this.generateOrderNo()}\n服务人员将在24小时内与您联系。\n\n您可以在"订单"页面查看详情。`,
-        showCancel: false,
-        confirmText: '我知道了',
-        success: () => {
-          // 可以跳转到订单页面
-          wx.switchTab({
-            url: '/pages/orders/orders',
-            fail: () => {
-              console.log('跳转订单页面失败')
-            }
-          })
+        cancelText: '稍后查看',
+        confirmText: '查看订单',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户点击"查看订单"，跳转到订单页面
+            wx.switchTab({
+              url: '/pages/orders/orders'
+            })
+          }
+          // 用户点击"稍后查看"或关闭弹窗，不做任何操作
         }
       })
     }, 1000)

@@ -190,9 +190,9 @@ Page({
    * 查看视频监控
    */
   viewMonitor(e) {
-    const { id } = e.currentTarget.dataset
+    const { id, name } = e.currentTarget.dataset
     wx.navigateTo({
-      url: `/pages/video-monitor/video-monitor?gardenId=${id}`
+      url: `/pages/camera/camera?gardenId=${id}&gardenName=${name}`
     })
   }
 })
