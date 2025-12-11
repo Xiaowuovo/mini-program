@@ -1,86 +1,214 @@
 <!--pages/index/index.wxml-->
 <view class="container">
+  <!-- 顶部欢迎栏 -->
+  <view class="welcome-bar">
+    <!-- 自定义导航栏 -->
+    <view class="custom-navbar">
+      <text class="navbar-title">云端小筑</text>
+    </view>
+
+    <!-- 欢迎内容 -->
+    <view class="welcome-content">
+      <view class="welcome-text">
+        <text class="greeting">{{greeting}}，</text>
+        <text class="user-name">{{userName}}</text>
+      </view>
+      <view class="weather-info" wx:if="{{weather}}">
+        <text class="weather-icon">{{weather.icon}}</text>
+        <text class="weather-text">{{weather.temp}}°C</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 轮播图 -->
-  <swiper class="banner-swiper" indicator-dots indicator-color="rgba(255,255,255,0.5)" indicator-active-color="#4CAF50" autoplay circular>
+  <swiper
+    class="banner-swiper"
+    indicator-dots="{{false}}"
+    autoplay
+    circular
+    interval="{{5000}}"
+    duration="{{500}}"
+    bindchange="onBannerChange"
+  >
     <swiper-item wx:for="{{banners}}" wx:key="id">
-      <image src="{{item.image}}" class="banner-image" mode="aspectFill" binderror="onBannerError" data-index="{{index}}"></image>
+      <view class="banner-item">
+        <image src="{{item.image}}" class="banner-image" mode="aspectFill" binderror="onBannerError" data-index="{{index}}"></image>
+        <view class="banner-overlay">
+          <view class="banner-title">{{item.title}}</view>
+          <view class="banner-desc">{{item.desc}}</view>
+        </view>
+      </view>
     </swiper-item>
   </swiper>
+  <!-- 自定义指示器 -->
+  <view class="custom-indicator">
+    <view
+      wx:for="{{banners}}"
+      wx:key="id"
+      class="indicator-dot {{currentBanner === index ? 'active' : ''}}"
+    ></view>
+  </view>
 
-  <!-- 功能入口 -->
-  <view class="function-grid">
-    <view class="function-item" bindtap="navigateToGardens">
-      <view class="function-icon-wrapper">
-        <image src="/images/icon-garden.png" class="function-icon"></image>
+  <!-- 快捷入口 -->
+  <view class="quick-actions">
+    <view class="function-grid">
+      <view class="function-item" bindtap="navigateToGardens">
+        <view class="function-icon-wrapper bg-green">
+          <text class="function-emoji">🌱</text>
+        </view>
+        <text class="function-label">租用菜地</text>
+        <view class="function-badge" wx:if="{{availableCount > 0}}">{{availableCount}}</view>
       </view>
-      <text>租用菜地</text>
+      <view class="function-item" bindtap="navigateToMyGardens">
+        <view class="function-icon-wrapper bg-blue">
+          <text class="function-emoji">🏡</text>
+        </view>
+        <text class="function-label">我的菜地</text>
+        <view class="function-badge red" wx:if="{{myGardenCount > 0}}">{{myGardenCount}}</view>
+      </view>
+      <view class="function-item" bindtap="navigateToServices">
+        <view class="function-icon-wrapper bg-orange">
+          <text class="function-emoji">🛎️</text>
+        </view>
+        <text class="function-label">增值服务</text>
+      </view>
+      <view class="function-item" bindtap="navigateToReminders">
+        <view class="function-icon-wrapper bg-purple">
+          <text class="function-emoji">⏰</text>
+        </view>
+        <text class="function-label">任务提醒</text>
+        <view class="function-badge red" wx:if="{{pendingTasks > 0}}">{{pendingTasks}}</view>
+      </view>
     </view>
-    <view class="function-item" bindtap="navigateToMyGardens">
-      <view class="function-icon-wrapper">
-        <image src="/images/icon-my-garden.png" class="function-icon"></image>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="stats-section">
+    <view class="stat-item">
+      <view class="stat-icon">📊</view>
+      <view class="stat-info">
+        <view class="stat-value">{{totalGardens}}</view>
+        <view class="stat-label">菜地总数</view>
       </view>
-      <text>我的菜地</text>
     </view>
-    <view class="function-item" bindtap="navigateToServices">
-      <view class="function-icon-wrapper">
-        <image src="/images/icon-service.png" class="function-icon"></image>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="stat-icon">👥</view>
+      <view class="stat-info">
+        <view class="stat-value">{{totalUsers}}</view>
+        <view class="stat-label">用户总数</view>
       </view>
-      <text>增值服务</text>
     </view>
-    <view class="function-item" bindtap="navigateToReminders">
-      <view class="function-icon-wrapper">
-        <image src="/images/icon-remind.png" class="function-icon"></image>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="stat-icon">✨</view>
+      <view class="stat-info">
+        <view class="stat-value">{{satisfactionRate}}%</view>
+        <view class="stat-label">满意度</view>
       </view>
-      <text>任务提醒</text>
     </view>
   </view>
 
   <!-- 热门菜地 -->
   <view class="section">
     <view class="section-header">
-      <text class="section-title">热门菜地</text>
-      <text class="section-more" bindtap="navigateToGardens">更多 ></text>
+      <view class="section-title-wrapper">
+        <text class="section-icon">🔥</text>
+        <text class="section-title">热门菜地</text>
+      </view>
+      <view class="section-more" bindtap="navigateToGardens">
+        <text>查看全部</text>
+        <text class="arrow">→</text>
+      </view>
     </view>
 
-    <view class="garden-list">
-      <view
-        wx:for="{{hotGardens}}"
-        wx:key="id"
-        class="garden-card"
-        bindtap="navigateToGardenDetail"
-        data-id="{{item.id}}"
-      >
-        <image src="{{item.image_url || (item.images && item.images.length > 0 ? item.images[0] : '/images/default-garden.png')}}" class="garden-image" mode="aspectFill" binderror="onGardenImageError" data-index="{{index}}"></image>
-        <view class="garden-info">
-          <view class="garden-name">{{item.name}}</view>
-          <view class="garden-desc">
-            <text class="garden-tag">{{item.area}}㎡</text>
-            <text class="garden-tag">{{item.location}}</text>
-          </view>
-          <view class="garden-footer">
-            <view class="garden-price">
-              <text class="price-number">{{item.price}}</text>
-              <text class="price-unit">元/月</text>
-            </view>
-            <view class="garden-status status-{{item.status}}">
+    <!-- 横向滚动菜地列表 -->
+    <scroll-view class="garden-scroll" scroll-x show-scrollbar="{{false}}">
+      <view class="garden-list-horizontal">
+        <view
+          wx:for="{{hotGardens}}"
+          wx:key="id"
+          class="garden-card-h"
+          bindtap="navigateToGardenDetail"
+          data-id="{{item.id}}"
+        >
+          <image
+            src="{{item.image_url || (item.images && item.images.length > 0 ? item.images[0] : '/images/default-garden.png')}}"
+            class="garden-image-h"
+            mode="aspectFill"
+            binderror="onGardenImageError"
+            data-index="{{index}}"
+          ></image>
+          <view class="garden-overlay">
+            <view class="garden-status-tag status-{{item.status}}">
               {{item.status === 'available' ? '可租用' : item.status === 'rented' ? '已租出' : '维护中'}}
+            </view>
+          </view>
+          <view class="garden-info-h">
+            <view class="garden-name-h">{{item.name}}</view>
+            <view class="garden-meta">
+              <text class="meta-item">📏 {{item.area}}㎡</text>
+              <text class="meta-item">📍 {{item.location}}</text>
+            </view>
+            <view class="garden-footer-h">
+              <view class="garden-price-h">
+                <text class="price-symbol">¥</text>
+                <text class="price-number">{{item.price}}</text>
+                <text class="price-unit">/月</text>
+              </view>
+              <view class="rent-btn">立即租用</view>
             </view>
           </view>
         </view>
       </view>
-    </view>
+    </scroll-view>
 
     <view wx:if="{{hotGardens.length === 0}}" class="empty-state">
-      <image src="/images/empty.png" class="empty-image"></image>
-      <text>暂无热门菜地</text>
+      <text class="empty-icon">🌾</text>
+      <text class="empty-text">暂无热门菜地</text>
+      <view class="empty-btn" bindtap="loadHotGardens">刷新试试</view>
+    </view>
+  </view>
+
+  <!-- 种植知识 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title-wrapper">
+        <text class="section-icon">📚</text>
+        <text class="section-title">种植知识</text>
+      </view>
+      <view class="section-more" bindtap="navigateToKnowledge">
+        <text>学习更多</text>
+        <text class="arrow">→</text>
+      </view>
+    </view>
+
+    <view class="knowledge-grid">
+      <view
+        wx:for="{{knowledgeList}}"
+        wx:key="id"
+        class="knowledge-card"
+        bindtap="viewKnowledge"
+        data-id="{{item.id}}"
+      >
+        <view class="knowledge-icon">{{item.icon}}</view>
+        <view class="knowledge-title">{{item.title}}</view>
+        <view class="knowledge-desc">{{item.desc}}</view>
+      </view>
     </view>
   </view>
 
   <!-- 最新动态 -->
   <view class="section">
     <view class="section-header">
-      <text class="section-title">社区动态</text>
-      <text class="section-more" bindtap="navigateToCommunity">更多 ></text>
+      <view class="section-title-wrapper">
+        <text class="section-icon">💬</text>
+        <text class="section-title">社区动态</text>
+      </view>
+      <view class="section-more" bindtap="navigateToCommunity">
+        <text>查看全部</text>
+        <text class="arrow">→</text>
+      </view>
     </view>
 
     <view class="post-list">
@@ -103,15 +231,25 @@
           <view class="post-text">{{item.content}}</view>
         </view>
         <view class="post-footer">
-          <text class="post-stat">💬 {{item.comment_count}}</text>
-          <text class="post-stat">❤️ {{item.like_count}}</text>
+          <view class="post-stat">
+            <text class="stat-icon">💬</text>
+            <text>{{item.comment_count || 0}}</text>
+          </view>
+          <view class="post-stat">
+            <text class="stat-icon">❤️</text>
+            <text>{{item.like_count || 0}}</text>
+          </view>
         </view>
       </view>
     </view>
 
     <view wx:if="{{latestPosts.length === 0}}" class="empty-state">
-      <image src="/images/empty.png" class="empty-image"></image>
-      <text>暂无社区动态</text>
+      <text class="empty-icon">💭</text>
+      <text class="empty-text">还没有动态，快去发布第一条吧！</text>
+      <view class="empty-btn" bindtap="navigateToCommunity">去发布</view>
     </view>
   </view>
+
+  <!-- 底部安全区 -->
+  <view class="safe-bottom"></view>
 </view>

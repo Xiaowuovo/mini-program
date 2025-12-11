@@ -1,5 +1,7 @@
 {
   "usingComponents": {},
-  "navigationBarTitleText": "云端小筑",
-  "enablePullDownRefresh": true
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#F5F7FA",
+  "backgroundTextStyle": "dark"
 }

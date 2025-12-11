@@ -74,7 +74,9 @@ Page({
   clearLoginHistory() {
     wx.showModal({
       title: '确认清除',
-      content: '是否清除所有登录历史？',
+      content: '确定要清除所有登录历史吗？',
+      confirmText: '清除',
+      confirmColor: '#F44336',
       success: (res) => {
         if (res.confirm) {
           wx.removeStorageSync('recentLogins')
@@ -92,14 +94,14 @@ Page({
   },
 
   /**
-   * 创建新用户登录
+   * 用户登录
    */
   onLogin() {
     wx.showModal({
-      title: '创建新用户',
-      content: '请输入用户昵称',
+      title: '用户登录',
       editable: true,
-      placeholderText: '例如：张三',
+      placeholderText: '请输入您的昵称',
+      confirmText: '登录',
       success: (res) => {
         if (res.confirm && res.content) {
           const nickname = res.content.trim()
@@ -117,22 +119,66 @@ Page({
   },
 
   /**
-   * 创建管理员登录
+   * 用户注册
    */
-  onAdminLogin() {
+  onRegister() {
     wx.showModal({
-      title: '管理员登录',
-      content: '请输入管理员昵称',
+      title: '注册新账号',
       editable: true,
-      placeholderText: '例如：管理员',
+      placeholderText: '注册后将自动登录',
+      confirmText: '注册',
       success: (res) => {
         if (res.confirm && res.content) {
           const nickname = res.content.trim()
           if (nickname) {
-            this.doLogin(nickname, 'admin')
+            // 显示注册动画
+            wx.showLoading({
+              title: '注册中...',
+              mask: true
+            })
+
+            setTimeout(() => {
+              wx.hideLoading()
+              wx.showToast({
+                title: '注册成功',
+                icon: 'success',
+                duration: 1500
+              })
+
+              // 注册成功后自动登录
+              setTimeout(() => {
+                this.doLogin(nickname, 'tenant')
+              }, 1500)
+            }, 1000)
           } else {
             wx.showToast({
               title: '昵称不能为空',
+              icon: 'none'
+            })
+          }
+        }
+      }
+    })
+  },
+
+  /**
+   * 切换到管理员登录
+   */
+  switchToAdmin() {
+    wx.showModal({
+      title: '管理员登录',
+      editable: true,
+      placeholderText: '请输入管理员账号',
+      confirmText: '登录',
+      success: (res) => {
+        if (res.confirm && res.content) {
+          const nickname = res.content.trim()
+          if (nickname) {
+            // 这里可以添加密码验证
+            this.doLogin(nickname, 'admin')
+          } else {
+            wx.showToast({
+              title: '账号不能为空',
               icon: 'none'
             })
           }

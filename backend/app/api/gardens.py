@@ -154,9 +154,25 @@ async def get_my_gardens(
     for order in orders:
         garden = db.query(Garden).filter(Garden.id == order.garden_id).first()
         if garden:
+            import json
+
             remaining_days = (order.end_date - today).days
 
-            garden_dict = GardenSchema.from_orm(garden).dict()
+            # 手动构建字典，处理 images 字段
+            garden_dict = {
+                'id': garden.id,
+                'name': garden.name,
+                'area': garden.area,
+                'price': garden.price,
+                'status': garden.status,
+                'location': garden.location,
+                'description': garden.description,
+                'images': json.loads(garden.images) if garden.images and isinstance(garden.images, str) else (garden.images or []),
+                'video_stream_url': garden.video_stream_url,
+                'created_at': garden.created_at,
+                'updated_at': garden.updated_at
+            }
+
             garden_dict['is_mine'] = True
             garden_dict['current_order'] = {
                 'order_id': order.id,

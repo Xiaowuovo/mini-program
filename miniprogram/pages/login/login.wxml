@@ -1,13 +1,37 @@
 <!--pages/login/login.wxml-->
 <view class="login-container">
-  <view class="login-header">
-    <image class="logo" src="/images/logo.png" mode="aspectFit"></image>
-    <view class="app-name">云端小筑</view>
-    <view class="app-desc">您的专属共享菜园</view>
+  <!-- 装饰性背景元素 -->
+  <view class="bg-decoration">
+    <view class="leaf leaf-1">🌿</view>
+    <view class="leaf leaf-2">🍃</view>
+    <view class="leaf leaf-3">🌱</view>
   </view>
 
+  <!-- 顶部区域 -->
+  <view class="top-section">
+    <view class="login-header">
+      <view class="logo-wrapper">
+        <image class="logo" src="/images/logo.png" mode="aspectFit"></image>
+        <view class="logo-shadow"></view>
+      </view>
+      <view class="app-name">
+        <text class="name-text">云端小筑</text>
+        <view class="name-underline"></view>
+      </view>
+      <view class="app-desc">🌾 您的专属共享菜园 🌾</view>
+    </view>
+  </view>
+
+  <!-- 中部内容 -->
   <view class="login-content">
-    <view class="welcome-text">欢迎来到云端小筑</view>
+    <view class="welcome-section">
+      <text class="welcome-text">欢迎来到云端小筑</text>
+      <view class="welcome-dots">
+        <view class="dot"></view>
+        <view class="dot"></view>
+        <view class="dot"></view>
+      </view>
+    </view>
     <view class="desc-text">享受种植的乐趣，体验田园生活</view>
 
     <!-- 登录历史 -->
@@ -44,45 +68,75 @@
 
     <view class="features">
       <view class="feature-item">
-        <text class="feature-icon">🌱</text>
-        <text>在线租地</text>
+        <view class="feature-icon-wrapper">
+          <text class="feature-icon">🌱</text>
+        </view>
+        <text class="feature-text">在线租地</text>
       </view>
       <view class="feature-item">
-        <text class="feature-icon">📹</text>
-        <text>远程监控</text>
+        <view class="feature-icon-wrapper">
+          <text class="feature-icon">📹</text>
+        </view>
+        <text class="feature-text">远程监控</text>
       </view>
       <view class="feature-item">
-        <text class="feature-icon">⏰</text>
-        <text>智能提醒</text>
+        <view class="feature-icon-wrapper">
+          <text class="feature-icon">⏰</text>
+        </view>
+        <text class="feature-text">智能提醒</text>
       </view>
       <view class="feature-item">
-        <text class="feature-icon">💬</text>
-        <text>社区交流</text>
+        <view class="feature-icon-wrapper">
+          <text class="feature-icon">💬</text>
+        </view>
+        <text class="feature-text">社区交流</text>
       </view>
     </view>
 
-    <!-- 新用户登录 -->
-    <button
-      class="login-btn"
-      type="primary"
-      bindtap="onLogin"
-      loading="{{isLoading}}"
-    >
-      <text class="btn-icon">➕</text>
-      创建新用户登录
-    </button>
+    <!-- 登录按钮组 -->
+    <view class="buttons-group">
+      <!-- 主要操作：登录 -->
+      <button
+        class="login-btn primary-btn"
+        bindtap="onLogin"
+        loading="{{isLoading}}"
+        hover-class="btn-hover"
+      >
+        <view class="btn-content">
+          <text class="btn-text">登录</text>
+        </view>
+        <view class="btn-shine"></view>
+      </button>
 
-    <!-- 管理端入口 -->
-    <view class="admin-entry" bindtap="onAdminLogin">
-      <text class="admin-icon">⚙️</text>
-      <text class="admin-text">创建管理员登录</text>
+      <!-- 次要操作：注册 -->
+      <button
+        class="login-btn secondary-btn"
+        bindtap="onRegister"
+        hover-class="btn-hover"
+      >
+        <view class="btn-content">
+          <text class="btn-text">注册新账号</text>
+        </view>
+      </button>
     </view>
 
+    <!-- 管理员入口 -->
+    <view class="admin-switch" bindtap="switchToAdmin">
+      <text class="switch-text">切换到管理员登录</text>
+      <text class="switch-arrow">→</text>
+    </view>
+
+    <!-- 协议 -->
     <view class="agreement">
-      <text>登录即表示同意</text>
+      <text class="agreement-text">登录即表示同意</text>
       <text class="link" bindtap="onViewAgreement">《用户协议》</text>
-      <text>和</text>
+      <text class="agreement-text">和</text>
       <text class="link" bindtap="onViewPrivacy">《隐私政策》</text>
     </view>
+  </view>
+
+  <!-- 底部装饰 -->
+  <view class="footer-decoration">
+    <text class="footer-text">🌿 开启您的智慧农场之旅 🌿</text>
   </view>
 </view>
