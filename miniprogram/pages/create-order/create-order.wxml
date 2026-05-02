@@ -30,7 +30,7 @@
 
       <view class="form-item">
         <text class="item-label">租用月数</text>
-        <picker mode="selector" range="{{[1,2,3,6,12]}}" value="0" bindchange="onMonthsChange">
+        <picker mode="selector" range="{{monthLabels}}" value="{{monthIndex}}" bindchange="onMonthsChange">
           <view class="picker-value">
             <text>{{months}}个月</text>
             <text class="arrow">></text>
@@ -101,6 +101,8 @@
       <text class="label">总计：</text>
       <text class="price">¥{{totalPrice}}</text>
     </view>
-    <button class="submit-btn" bindtap="submitOrder">提交订单</button>
+    <button class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="submitOrder" disabled="{{submitting}}">
+      {{submitting ? '提交中...' : '提交订单'}}
+    </button>
   </view>
 </view>

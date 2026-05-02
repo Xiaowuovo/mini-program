@@ -1,6 +1,7 @@
 // pages/index/index.js
 const { getGardenList } = require('../../api/garden.js')
-const { showLoading, hideLoading, timeAgo } = require('../../utils/util.js')
+const { getPublicStats } = require('../../api/admin.js')
+const { showLoading, hideLoading } = require('../../utils/util.js')
 
 Page({
   data: {
@@ -30,13 +31,11 @@ Page({
     // 用户信息
     greeting: '你好',
     userName: '租户',
-    weather: null,
 
-    // 统计数据
-    totalGardens: 50,
-    totalUsers: 1200,
-    satisfactionRate: 98,
-    availableCount: 12,
+    // 统计数据（从API加载）
+    totalGardens: 0,
+    totalUsers: 0,
+    availableCount: 0,
     myGardenCount: 0,
     pendingTasks: 0,
 
@@ -49,10 +48,7 @@ Page({
       { id: 2, icon: '💧', title: '浇水技巧', desc: '科学灌溉' },
       { id: 3, icon: '🌿', title: '施肥方法', desc: '营养均衡' },
       { id: 4, icon: '🐛', title: '病虫害防治', desc: '绿色防控' }
-    ],
-
-    // 社区动态
-    latestPosts: []
+    ]
   },
 
   onLoad() {
@@ -66,8 +62,7 @@ Page({
     this.setGreeting()
     this.loadUserInfo()
     this.loadHotGardens()
-    this.loadMockPosts()
-    // this.loadWeather()
+    this.loadPublicStats()
   },
 
   onPullDownRefresh() {
@@ -78,7 +73,6 @@ Page({
   },
 
   onShow() {
-    // 刷新用户数据
     this.loadUserInfo()
   },
 
@@ -130,33 +124,20 @@ Page({
   },
 
   /**
-   * 加载模拟动态
+   * 加载公开统计数据
    */
-  loadMockPosts() {
-    const mockPosts = [
-      {
-        id: 1,
-        user_nickname: '种菜达人',
-        user_avatar: '/images/default-avatar.png',
-        title: '今年的番茄大丰收啦！',
-        content: '经过3个月的精心照料，今天终于收获了满满一篮子新鲜的番茄，感谢云端小筑提供的优质菜地！',
-        created_at: '2小时前',
-        comment_count: 15,
-        like_count: 32
-      },
-      {
-        id: 2,
-        user_nickname: '绿手指',
-        user_avatar: '/images/default-avatar.png',
-        title: '分享我的种菜经验',
-        content: '经过一年的实践，总结了一些种菜心得，希望能帮到新手朋友们...',
-        created_at: '5小时前',
-        comment_count: 8,
-        like_count: 21
-      }
-    ]
-
-    this.setData({ latestPosts: mockPosts })
+  loadPublicStats() {
+    getPublicStats()
+      .then(res => {
+        this.setData({
+          totalGardens: res.totalGardens || 0,
+          totalUsers: res.totalUsers || 0,
+          availableCount: res.availableGardens || 0
+        })
+      })
+      .catch(err => {
+        console.error('加载统计数据失败:', err)
+      })
   },
 
   /**
@@ -222,25 +203,6 @@ Page({
   },
 
   /**
-   * 跳转到社区
-   */
-  navigateToCommunity() {
-    wx.switchTab({
-      url: '/pages/community/community'
-    })
-  },
-
-  /**
-   * 跳转到帖子详情
-   */
-  navigateToPostDetail(e) {
-    const id = e.currentTarget.dataset.id
-    wx.navigateTo({
-      url: `/pages/post-detail/post-detail?id=${id}`
-    })
-  },
-
-  /**
    * 轮播图加载失败
    */
   onBannerError(e) {
@@ -288,7 +250,7 @@ Page({
   navigateToKnowledge() {
     wx.showModal({
       title: '种植知识库',
-      content: '更多种植知识请查看：\n\n• 社区动态中的经验分享\n• 增值服务中的专家指导\n• 帮助中心的使用指南',
+      content: '更多种植知识请查看：\n\n• 增值服务中的专家指导\n• 帮助中心的使用指南\n• 任务提醒的种植建议',
       showCancel: false,
       confirmText: '知道了'
     })

@@ -11,6 +11,8 @@ from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.crop import SmartReminder, PlantingRecord, Crop
+from app.models.garden import Garden
+from app.models.order import Order
 from app.services.smart_reminder_engine import SmartReminderEngine
 from app.services.iot_service import IoTService
 
@@ -51,7 +53,7 @@ class CompleteReminderRequest(BaseModel):
     reminder_id: int
 
 
-@router.get("/generate", response_model=List[ReminderResponse])
+@router.get("/generate")
 def generate_smart_reminders(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -59,29 +61,31 @@ def generate_smart_reminders(
     """
     生成智能提醒
 
-    自动分析用户的所有种植记录，基于：
-    - 作物生长规则
-    - 物联网传感器数据
-    - 历史完成记录
-
-    生成个性化的任务提醒
+    基于实时数据自动触发：
+    - 有种植记录：基于作物生长规则 + 物联网传感器数据生成
+    - 无种植记录：基于活跃租用订单生成基础维护提醒
     """
-    # 首先更新所有种植记录的生长阶段
-    planting_records = db.query(PlantingRecord).filter(
-        PlantingRecord.user_id == current_user.id,
-        PlantingRecord.status == "growing"
-    ).all()
+    try:
+        planting_records = db.query(PlantingRecord).filter(
+            PlantingRecord.user_id == current_user.id,
+            PlantingRecord.status == "growing"
+        ).all()
 
-    for record in planting_records:
-        SmartReminderEngine.update_growth_stage(db, record.id)
+        count = 0
+        if planting_records:
+            for record in planting_records:
+                SmartReminderEngine.update_growth_stage(db, record.id)
+            reminders = SmartReminderEngine.generate_reminders(db, current_user.id)
+            count = len(reminders)
+        else:
+            count = _generate_order_based_reminders(db, current_user.id)
 
-    # 生成智能提醒
-    reminders = SmartReminderEngine.generate_reminders(db, current_user.id)
+        return {"message": "提醒生成成功", "count": count}
+    except Exception as e:
+        return {"message": "生成完成", "count": 0}
 
-    return reminders
 
-
-@router.get("/list", response_model=List[ReminderResponse])
+@router.get("/list")
 def get_reminders(
     status: Optional[str] = Query(None, description="状态筛选：pending/completed/ignored"),
     reminder_type: Optional[str] = Query(None, description="类型筛选"),
@@ -90,13 +94,13 @@ def get_reminders(
     current_user: User = Depends(get_current_user)
 ):
     """
-    获取提醒列表
+    获取提醒列表（含菜地名称）
     """
     query = db.query(SmartReminder).filter(
         SmartReminder.user_id == current_user.id
     )
 
-    if status:
+    if status and status != 'all':
         query = query.filter(SmartReminder.status == status)
 
     if reminder_type:
@@ -104,10 +108,36 @@ def get_reminders(
 
     reminders = query.order_by(
         SmartReminder.priority.desc(),
-        SmartReminder.remind_time.desc()
+        SmartReminder.remind_time.asc()
     ).limit(limit).all()
 
-    return reminders
+    # 缓存菜地名称
+    garden_cache = {}
+    result = []
+    for r in reminders:
+        garden_name = None
+        if r.garden_id:
+            if r.garden_id not in garden_cache:
+                garden = db.query(Garden).filter(Garden.id == r.garden_id).first()
+                garden_cache[r.garden_id] = garden.name if garden else None
+            garden_name = garden_cache[r.garden_id]
+
+        result.append({
+            "id": r.id,
+            "reminder_type": r.reminder_type,
+            "title": r.title,
+            "description": r.description,
+            "remind_time": r.remind_time.isoformat() if r.remind_time else None,
+            "priority": r.priority,
+            "status": r.status,
+            "source": r.source,
+            "extra_data": r.extra_data,
+            "garden_id": r.garden_id,
+            "garden_name": garden_name,
+            "created_at": r.created_at.isoformat() if r.created_at else None
+        })
+
+    return result
 
 
 @router.post("/complete")
@@ -119,12 +149,17 @@ def complete_reminder(
     """
     完成提醒
     """
-    success = SmartReminderEngine.complete_reminder(
-        db, request.reminder_id, current_user.id
-    )
+    reminder = db.query(SmartReminder).filter(
+        SmartReminder.id == request.reminder_id,
+        SmartReminder.user_id == current_user.id
+    ).first()
 
-    if not success:
-        raise HTTPException(status_code=404, detail="提醒不存在或无权操作")
+    if not reminder:
+        raise HTTPException(status_code=404, detail="提醒不存在")
+
+    reminder.status = "completed"
+    reminder.completed_at = datetime.now()
+    db.commit()
 
     return {"message": "提醒已完成", "success": True}
 
@@ -275,6 +310,74 @@ def create_manual_reminder(
             "reminder_type": reminder.reminder_type
         }
     }
+
+
+
+def _generate_order_based_reminders(db: Session, user_id: int) -> int:
+    """基于活跃订单生成基础提醒（无种植记录时的回退策略）"""
+    from datetime import timedelta
+
+    active_orders = db.query(Order).filter(
+        Order.user_id == user_id,
+        Order.status.in_(['confirmed', 'active'])
+    ).all()
+
+    count = 0
+    now = datetime.now()
+    remind_base = now.replace(hour=9, minute=0, second=0, microsecond=0)
+    if remind_base <= now:
+        remind_base += timedelta(days=1)
+
+    for order in active_orders:
+        garden = db.query(Garden).filter(Garden.id == order.garden_id).first()
+        garden_name = garden.name if garden else f"菜地#{order.garden_id}"
+
+        # 最近3天内是否已有订单生成的提醒
+        recent_cutoff = now - timedelta(days=3)
+        existing = db.query(SmartReminder).filter(
+            SmartReminder.user_id == user_id,
+            SmartReminder.garden_id == order.garden_id,
+            SmartReminder.status == 'pending',
+            SmartReminder.source == 'order_based',
+            SmartReminder.created_at >= recent_cutoff
+        ).count()
+
+        if existing > 0:
+            continue
+
+        watering = SmartReminder(
+            user_id=user_id,
+            garden_id=order.garden_id,
+            reminder_type='watering',
+            title=f'给{garden_name}浇水',
+            description='建议每2-3天浇水一次，保持土壤湿润',
+            remind_time=remind_base,
+            priority=3,
+            source='order_based',
+            status='pending',
+            extra_data={'order_id': order.id, 'frequency': 3}
+        )
+        db.add(watering)
+        count += 1
+
+        fertilizing = SmartReminder(
+            user_id=user_id,
+            garden_id=order.garden_id,
+            reminder_type='fertilizing',
+            title=f'为{garden_name}施肥',
+            description='建议每7-10天施一次有机肥，促进作物健康生长',
+            remind_time=remind_base + timedelta(days=7),
+            priority=2,
+            source='order_based',
+            status='pending',
+            extra_data={'order_id': order.id, 'frequency': 7, 'fertilizer_type': '有机肥'}
+        )
+        db.add(fertilizing)
+        count += 1
+
+    if count > 0:
+        db.commit()
+    return count
 
 
 @router.get("/statistics")

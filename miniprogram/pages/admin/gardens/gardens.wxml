@@ -94,6 +94,43 @@
     </view>
   </view>
 
+  <!-- 编辑菜地弹窗 -->
+  <view class="dialog-mask" wx:if="{{showEditDialog}}" bindtap="onHideEditDialog">
+    <view class="dialog" catchtap="doNothing">
+      <view class="dialog-title">编辑菜地</view>
+
+      <view class="form-group">
+        <text class="form-label">名称</text>
+        <input class="form-input" placeholder="菜地名称" data-field="name" value="{{editGarden.name}}" bindinput="onEditInputChange" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">位置</text>
+        <input class="form-input" placeholder="菜地位置" data-field="location" value="{{editGarden.location}}" bindinput="onEditInputChange" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">面积（㎡）</text>
+        <input class="form-input" type="digit" placeholder="面积" data-field="area" value="{{editGarden.area}}" bindinput="onEditInputChange" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">价格（元/月）</text>
+        <input class="form-input" type="digit" placeholder="租金" data-field="price" value="{{editGarden.price}}" bindinput="onEditInputChange" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">描述</text>
+        <input class="form-input" placeholder="菜地描述（可选）" data-field="description" value="{{editGarden.description}}" bindinput="onEditInputChange" />
+      </view>
+
+      <view class="dialog-actions">
+        <button class="dialog-btn cancel-btn" bindtap="onHideEditDialog">取消</button>
+        <button class="dialog-btn confirm-btn" bindtap="onConfirmEdit">保存</button>
+      </view>
+    </view>
+  </view>
+
   <!-- 添加菜地弹窗 -->
   <view class="dialog-mask" wx:if="{{showAddDialog}}" bindtap="onHideAddDialog">
     <view class="dialog" catchtap="doNothing">

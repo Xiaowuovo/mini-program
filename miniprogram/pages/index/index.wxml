@@ -93,18 +93,18 @@
     </view>
     <view class="stat-divider"></view>
     <view class="stat-item">
-      <view class="stat-icon">👥</view>
+      <view class="stat-icon">🌿</view>
       <view class="stat-info">
-        <view class="stat-value">{{totalUsers}}</view>
-        <view class="stat-label">用户总数</view>
+        <view class="stat-value">{{availableCount}}</view>
+        <view class="stat-label">可租菜地</view>
       </view>
     </view>
     <view class="stat-divider"></view>
     <view class="stat-item">
-      <view class="stat-icon">✨</view>
+      <view class="stat-icon">👥</view>
       <view class="stat-info">
-        <view class="stat-value">{{satisfactionRate}}%</view>
-        <view class="stat-label">满意度</view>
+        <view class="stat-value">{{totalUsers}}</view>
+        <view class="stat-label">用户总数</view>
       </view>
     </view>
   </view>
@@ -195,58 +195,6 @@
         <view class="knowledge-title">{{item.title}}</view>
         <view class="knowledge-desc">{{item.desc}}</view>
       </view>
-    </view>
-  </view>
-
-  <!-- 最新动态 -->
-  <view class="section">
-    <view class="section-header">
-      <view class="section-title-wrapper">
-        <text class="section-icon">💬</text>
-        <text class="section-title">社区动态</text>
-      </view>
-      <view class="section-more" bindtap="navigateToCommunity">
-        <text>查看全部</text>
-        <text class="arrow">→</text>
-      </view>
-    </view>
-
-    <view class="post-list">
-      <view
-        wx:for="{{latestPosts}}"
-        wx:key="id"
-        class="post-card"
-        bindtap="navigateToPostDetail"
-        data-id="{{item.id}}"
-      >
-        <view class="post-header">
-          <image src="{{item.user_avatar || '/images/default-avatar.png'}}" class="user-avatar"></image>
-          <view class="post-user">
-            <view class="user-name">{{item.user_nickname}}</view>
-            <view class="post-time">{{item.created_at}}</view>
-          </view>
-        </view>
-        <view class="post-content">
-          <view class="post-title">{{item.title}}</view>
-          <view class="post-text">{{item.content}}</view>
-        </view>
-        <view class="post-footer">
-          <view class="post-stat">
-            <text class="stat-icon">💬</text>
-            <text>{{item.comment_count || 0}}</text>
-          </view>
-          <view class="post-stat">
-            <text class="stat-icon">❤️</text>
-            <text>{{item.like_count || 0}}</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <view wx:if="{{latestPosts.length === 0}}" class="empty-state">
-      <text class="empty-icon">💭</text>
-      <text class="empty-text">还没有动态，快去发布第一条吧！</text>
-      <view class="empty-btn" bindtap="navigateToCommunity">去发布</view>
     </view>
   </view>
 

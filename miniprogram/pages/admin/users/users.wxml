@@ -7,6 +7,7 @@
         class="search-input"
         placeholder="搜索用户昵称或手机号"
         bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
         value="{{searchKeyword}}"
       />
       <text class="search-icon">🔍</text>
@@ -41,7 +42,7 @@
   <view class="users-list">
     <view
       class="user-card"
-      wx:for="{{filteredUsers}}"
+      wx:for="{{users}}"
       wx:key="id"
       data-id="{{item.id}}"
       bindtap="onViewDetail"
@@ -72,7 +73,7 @@
       </view>
     </view>
 
-    <view class="empty" wx:if="{{filteredUsers.length === 0 && !isLoading}}">
+    <view class="empty" wx:if="{{users.length === 0 && !isLoading}}">
       <text class="empty-icon">👥</text>
       <text class="empty-text">暂无用户</text>
     </view>

@@ -25,12 +25,21 @@ Page({
       gardenName: gardenName || ''
     })
 
-    // 获取摄像头URL
-    const url = app.globalData.cameraUrl || 'https://124.222.14.2:19302/demos/camera.html';
+    // 获取摄像头URL（优先从全局数据获取，未配置则提示）
+    const url = app.globalData.cameraUrl || ''
+    if (!url) {
+      this.setData({ loading: false })
+      wx.showModal({
+        title: '监控未配置',
+        content: '当前菜地暂未配置视频监控，请联系管理员。',
+        showCancel: false,
+        confirmText: '返回',
+        success: () => { wx.navigateBack() }
+      })
+      return
+    }
 
-    this.setData({
-      cameraUrl: url
-    });
+    this.setData({ cameraUrl: url });
   },
 
   // web-view 加载完成
@@ -63,7 +72,7 @@ Page({
           });
           setTimeout(() => {
             this.setData({
-              cameraUrl: app.globalData.cameraUrl || 'https://124.222.14.2:19302/demos/camera.html'
+              cameraUrl: app.globalData.cameraUrl || ''
             });
           }, 100);
         } else {

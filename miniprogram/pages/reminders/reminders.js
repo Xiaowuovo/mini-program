@@ -123,12 +123,6 @@ Page({
       .catch(err => {
         console.error('加载提醒失败:', err)
         this.setData({ loading: false })
-
-        // 使用模拟数据
-        this.setData({
-          reminders: this.getMockReminders()
-        })
-        this.loadStatistics()
         callback && callback()
       })
   },
@@ -137,50 +131,47 @@ Page({
    * 加载智能提醒
    */
   loadSmartReminders(callback) {
-    // 1. 先生成智能提醒
+    const self = this
+
+    const doLoadList = () => {
+      const params = {}
+      if (self.data.statusFilter !== 'all') {
+        params.status = self.data.statusFilter
+      }
+
+      getSmartReminderList(params)
+        .then(res => {
+          const reminders = (res || []).map(item => ({
+            id: item.id,
+            task_type: item.reminder_type,
+            title: item.title,
+            description: item.description,
+            remind_time: self.formatTime(item.remind_time),
+            status: item.status,
+            priority: item.priority,
+            source: item.source,
+            metadata: item.extra_data,
+            garden_name: item.garden_name || ''
+          }))
+
+          self.setData({ reminders, loading: false })
+          self.loadStatistics()
+          callback && callback()
+        })
+        .catch(err => {
+          console.error('加载提醒列表失败:', err)
+          self.setData({ loading: false })
+          callback && callback()
+        })
+    }
+
+    // 尝试生成提醒，无论成败与否都加载列表
     generateSmartReminders()
-      .then(() => {
-        // 2. 获取提醒列表
-        const params = {}
-        if (this.data.statusFilter !== 'all') {
-          params.status = this.data.statusFilter
-        }
-
-        return getSmartReminderList(params)
-      })
-      .then(res => {
-        // 3. 格式化数据
-        const reminders = (res || []).map(item => ({
-          id: item.id,
-          task_type: item.reminder_type,
-          title: item.title,
-          description: item.description,
-          remind_time: this.formatTime(item.remind_time),
-          status: item.status,
-          priority: item.priority,
-          source: item.source,
-          metadata: item.metadata,
-          garden_name: item.garden_name || '我的菜地'
-        }))
-
-        this.setData({
-          reminders: reminders,
-          loading: false
-        })
-
-        this.loadStatistics()
-        callback && callback()
-      })
       .catch(err => {
-        console.error('加载智能提醒失败:', err)
-        this.setData({ loading: false })
-
-        // 使用模拟数据
-        this.setData({
-          reminders: this.getMockSmartReminders()
-        })
-        this.loadStatistics()
-        callback && callback()
+        console.warn('生成提醒失败，继续加载已有列表:', err)
+      })
+      .finally(() => {
+        doLoadList()
       })
   },
 
@@ -219,91 +210,6 @@ Page({
   },
 
   /**
-   * 获取模拟提醒数据
-   */
-  getMockReminders() {
-    return [
-      {
-        id: 1,
-        task_type: 'watering',
-        title: '浇水提醒',
-        description: '请给菜地浇水，保持土壤湿润',
-        remind_time: '今天 10:00',
-        status: 'pending',
-        garden_name: '阳光菜地A-01'
-      },
-      {
-        id: 2,
-        task_type: 'fertilizing',
-        title: '施肥提醒',
-        description: '建议施有机肥，促进作物生长',
-        remind_time: '今天 15:00',
-        status: 'pending',
-        garden_name: '阳光菜地A-01'
-      }
-    ]
-  },
-
-  /**
-   * 获取模拟智能提醒数据
-   */
-  getMockSmartReminders() {
-    return [
-      {
-        id: 1,
-        task_type: 'watering',
-        title: '该给番茄浇水了',
-        description: '当前处于结果期，需要充足水分',
-        remind_time: '今天 10:00',
-        status: 'pending',
-        priority: 4,
-        source: 'rule_based',
-        garden_name: '阳光菜地A-01',
-        metadata: {
-          crop_name: '番茄',
-          growth_stage: 'fruiting',
-          watering_amount: 2.5,
-          frequency: 2
-        }
-      },
-      {
-        id: 2,
-        task_type: 'environment_alert',
-        title: '温度异常警告',
-        description: '菜地温度过低，注意保温',
-        remind_time: '今天 09:30',
-        status: 'pending',
-        priority: 5,
-        source: 'iot_triggered',
-        garden_name: '阳光菜地A-01',
-        metadata: {
-          sensor_type: 'temperature',
-          value: 12.5,
-          unit: '°C',
-          abnormal_reason: '温度过低，低于15°C'
-        }
-      },
-      {
-        id: 3,
-        task_type: 'fertilizing',
-        title: '该给番茄施肥了',
-        description: '建议使用有机复合肥',
-        remind_time: '今天 15:00',
-        status: 'pending',
-        priority: 3,
-        source: 'rule_based',
-        garden_name: '阳光菜地A-01',
-        metadata: {
-          crop_name: '番茄',
-          growth_stage: 'fruiting',
-          fertilizer_type: '有机复合肥',
-          frequency: 7
-        }
-      }
-    ]
-  },
-
-  /**
    * 切换筛选状态
    */
   onFilterChange(e) {
@@ -335,9 +241,10 @@ Page({
    * 完成任务
    */
   completeTask(id) {
+    const numId = parseInt(id)
     const completeFunc = this.data.useSmartReminders ? completeSmartReminder : completeReminder
 
-    completeFunc(id)
+    completeFunc(numId)
       .then(() => {
         wx.showToast({
           title: '已完成',
@@ -379,9 +286,10 @@ Page({
    * 忽略/删除任务
    */
   ignoreTask(id) {
+    const numId = parseInt(id)
     const ignoreFunc = this.data.useSmartReminders ? ignoreSmartReminder : deleteReminder
 
-    ignoreFunc(id)
+    ignoreFunc(numId)
       .then(() => {
         wx.showToast({
           title: this.data.useSmartReminders ? '已忽略' : '已删除',

@@ -1,5 +1,5 @@
 // pages/admin/dashboard/dashboard.js
-const app = getApp()
+const { getAdminStats } = require('../../../api/admin.js')
 
 Page({
   data: {
@@ -50,6 +50,10 @@ Page({
     this.loadStats()
   },
 
+  onShow() {
+    this.loadStats()
+  },
+
   checkAdminPermission() {
     const userInfo = wx.getStorageSync('userInfo')
     if (!userInfo || userInfo.role !== 'admin') {
@@ -74,32 +78,34 @@ Page({
   loadStats() {
     wx.showLoading({ title: '加载中...' })
 
-    // 这里应该调用后端API获取统计数据
-    // 暂时使用模拟数据
-    setTimeout(() => {
-      this.setData({
-        stats: {
-          totalGardens: 20,
-          rentedGardens: 15,
-          totalOrders: 45,
-          pendingOrders: 8,
-          totalUsers: 120,
-          totalRevenue: 38500
-        }
+    getAdminStats()
+      .then(res => {
+        const overview = res.overview || {}
+        const orderStats = res.orderStats || {}
+        this.setData({
+          stats: {
+            totalGardens: overview.totalGardens || 0,
+            rentedGardens: overview.rentedGardens || 0,
+            totalOrders: overview.totalOrders || 0,
+            pendingOrders: (orderStats.pending || 0) + (orderStats.paid || 0),
+            totalUsers: overview.totalUsers || 0,
+            totalRevenue: overview.totalRevenue || 0
+          }
+        })
       })
-      wx.hideLoading()
-    }, 500)
+      .catch(err => {
+        console.error('加载统计数据失败:', err)
+        wx.showToast({ title: '数据加载失败', icon: 'none' })
+      })
+      .finally(() => {
+        wx.hideLoading()
+      })
   },
 
   onMenuTap(e) {
     const { url } = e.currentTarget.dataset
     if (url) {
       wx.navigateTo({ url })
-    } else {
-      wx.showToast({
-        title: '功能开发中',
-        icon: 'none'
-      })
     }
   },
 

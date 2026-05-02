@@ -9,9 +9,6 @@
     "pages/orders/orders",
     "pages/order-detail/order-detail",
     "pages/create-order/create-order",
-    "pages/community/community",
-    "pages/post-detail/post-detail",
-    "pages/publish-post/publish-post",
     "pages/services/services",
     "pages/reminders/reminders",
     "pages/add-reminder/add-reminder",
@@ -47,10 +44,10 @@
         "selectedIconPath": "images/tab/garden-active.png"
       },
       {
-        "pagePath": "pages/community/community",
-        "text": "社区",
-        "iconPath": "images/tab/community.png",
-        "selectedIconPath": "images/tab/community-active.png"
+        "pagePath": "pages/orders/orders",
+        "text": "订单",
+        "iconPath": "images/tab/orders.png",
+        "selectedIconPath": "images/tab/orders-active.png"
       },
       {
         "pagePath": "pages/profile/profile",

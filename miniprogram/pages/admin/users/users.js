@@ -1,9 +1,11 @@
 // pages/admin/users/users.js
+const { getAdminUsers } = require('../../../api/admin.js')
+
 Page({
   data: {
     users: [],
-    filteredUsers: [],
-    roleFilter: 'all', // all, tenant, admin
+    total: 0,
+    roleFilter: 'all',
     searchKeyword: '',
     isLoading: false
   },
@@ -12,99 +14,64 @@ Page({
     this.loadUsers()
   },
 
+  onShow() {
+    this.loadUsers()
+  },
+
   loadUsers() {
     this.setData({ isLoading: true })
     wx.showLoading({ title: '加载中...' })
 
-    // 这里应该调用后端API获取用户列表
-    // 暂时使用模拟数据
-    this.loadMockUsers()
-  },
+    const params = {}
+    if (this.data.roleFilter !== 'all') {
+      params.role = this.data.roleFilter
+    }
+    if (this.data.searchKeyword) {
+      params.keyword = this.data.searchKeyword
+    }
 
-  loadMockUsers() {
-    setTimeout(() => {
-      const users = [
-        {
-          id: 1,
-          nickname: '管理员',
-          role: 'admin',
-          phone: '13800138000',
-          created_at: '2024-01-01',
-          total_orders: 0
-        },
-        {
-          id: 2,
-          nickname: '张三',
-          role: 'tenant',
-          phone: '13900139001',
-          created_at: '2024-02-15',
-          total_orders: 5
-        },
-        {
-          id: 3,
-          nickname: '李四',
-          role: 'tenant',
-          phone: '13900139002',
-          created_at: '2024-03-10',
-          total_orders: 3
-        },
-        {
-          id: 4,
-          nickname: '王五',
-          role: 'tenant',
-          phone: '13900139003',
-          created_at: '2024-04-05',
-          total_orders: 8
-        }
-      ]
-
-      this.setData({
-        users,
-        filteredUsers: users,
-        isLoading: false
+    getAdminUsers(params)
+      .then(res => {
+        this.setData({
+          users: res.items || [],
+          total: res.total || 0,
+          isLoading: false
+        })
       })
-      wx.hideLoading()
-    }, 500)
+      .catch(err => {
+        console.error('加载用户列表失败:', err)
+        wx.showToast({ title: '加载失败', icon: 'none' })
+        this.setData({ isLoading: false })
+      })
+      .finally(() => {
+        wx.hideLoading()
+      })
   },
 
   onFilterChange(e) {
     const role = e.currentTarget.dataset.role
     this.setData({ roleFilter: role })
-    this.filterUsers()
+    this.loadUsers()
   },
 
   onSearchInput(e) {
     this.setData({ searchKeyword: e.detail.value })
-    this.filterUsers()
   },
 
-  filterUsers() {
-    const { users, roleFilter, searchKeyword } = this.data
-
-    let filtered = users
-
-    // 角色筛选
-    if (roleFilter !== 'all') {
-      filtered = filtered.filter(u => u.role === roleFilter)
-    }
-
-    // 搜索筛选
-    if (searchKeyword) {
-      const keyword = searchKeyword.toLowerCase()
-      filtered = filtered.filter(u =>
-        u.nickname.toLowerCase().includes(keyword) ||
-        (u.phone && u.phone.includes(keyword))
-      )
-    }
-
-    this.setData({ filteredUsers: filtered })
+  onSearchConfirm() {
+    this.loadUsers()
   },
 
   onViewDetail(e) {
     const { id } = e.currentTarget.dataset
-    wx.showToast({
-      title: '用户详情功能开发中',
-      icon: 'none'
+    const user = this.data.users.find(u => u.id === id)
+    if (!user) return
+
+    wx.showModal({
+      title: user.nickname || '用户详情',
+      content: `角色：${user.role === 'admin' ? '管理员' : '租户'}\n手机：${user.phone || '未绑定'}\n注册时间：${user.created_at || '未知'}\n订单数：${user.total_orders || 0}`,
+      showCancel: false,
+      confirmText: '关闭'
     })
   },
 

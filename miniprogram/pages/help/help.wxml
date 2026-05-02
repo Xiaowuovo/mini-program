@@ -135,11 +135,6 @@
         <text class="guide-title">视频监控使用</text>
         <text class="guide-arrow">></text>
       </view>
-      <view class="guide-item" bindtap="viewGuide" data-type="community">
-        <text class="guide-icon">💬</text>
-        <text class="guide-title">社区互动指南</text>
-        <text class="guide-arrow">></text>
-      </view>
     </view>
   </view>
 </view>

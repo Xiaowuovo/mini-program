@@ -1,7 +1,6 @@
 // pages/garden-detail/garden-detail.js
 const { getGardenDetail } = require('../../api/garden.js')
 const { showLoading, hideLoading } = require('../../utils/util.js')
-const { getVideoUrl, isVideoAvailable } = require('../../config/video.js')
 
 Page({
   data: {
@@ -73,12 +72,9 @@ Page({
           garden.images = ['/images/default-garden.png']
         }
 
-        // 使用统一的视频源
-        if (!garden.video_stream_url || garden.video_stream_url.includes('example.com')) {
-          // 检查是否有视频可用
-          if (isVideoAvailable(this.data.gardenId)) {
-            garden.video_stream_url = getVideoUrl(this.data.gardenId, 'live')
-          }
+        // 清除示例URL
+        if (garden.video_stream_url && garden.video_stream_url.includes('example.com')) {
+          garden.video_stream_url = null
         }
 
         this.setData({

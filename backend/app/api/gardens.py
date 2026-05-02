@@ -84,13 +84,16 @@ async def get_gardens(
     status: Optional[GardenStatus] = Query(None, description="筛选状态"),
     skip: int = Query(0, ge=0, description="跳过数量"),
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
+    keyword: Optional[str] = Query(None, description="搜索关键词（名称/位置）"),
+    sort_field: Optional[str] = Query(None, description="排序字段：price / area"),
+    sort_order: str = Query('asc', description="排序方向：asc / desc"),
     current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """
     获取菜地列表
 
-    支持按状态筛选和分页，如果用户已登录会标记用户的菜地
+    支持按状态筛选、关键词搜索、价格/面积排序和分页，如果用户已登录会标记用户的菜地
     """
     query = db.query(Garden)
 
@@ -98,11 +101,25 @@ async def get_gardens(
     if status is not None:
         query = query.filter(Garden.status == status)
 
+    # 关键词搜索
+    if keyword:
+        query = query.filter(
+            Garden.name.contains(keyword) | Garden.location.contains(keyword)
+        )
+
     # 获取总数
     total = query.count()
 
+    # 排序逻辑
+    if sort_field == 'price':
+        order_col = Garden.price.asc() if sort_order == 'asc' else Garden.price.desc()
+    elif sort_field == 'area':
+        order_col = Garden.area.asc() if sort_order == 'asc' else Garden.area.desc()
+    else:
+        order_col = Garden.id.desc()
+
     # 分页查询
-    gardens = query.order_by(Garden.id.desc()).offset(skip).limit(limit).all()
+    gardens = query.order_by(order_col).offset(skip).limit(limit).all()
 
     # 丰富菜地信息
     user_id = current_user.id if current_user else None
@@ -436,17 +453,13 @@ async def get_garden_status(
     }
 
 
-# 统一的视频流URL配置
-UNIFIED_VIDEO_STREAM_URL = "https://sf1-hscdn-tos.pstatp.com/obj/media-fe/xgplayer_doc_video/hls/xgplayer-demo.m3u8"
-
-
 def _ensure_video_url(garden_dict: dict) -> dict:
     """
-    确保菜地有视频流URL
-    如果没有或是示例URL，则使用统一的视频源
+    清除示例URL，只返回实际配置的视频流URL
     """
-    if not garden_dict.get('video_stream_url') or 'example.com' in str(garden_dict.get('video_stream_url', '')):
-        garden_dict['video_stream_url'] = UNIFIED_VIDEO_STREAM_URL
+    url = garden_dict.get('video_stream_url', '')
+    if not url or 'example.com' in str(url):
+        garden_dict['video_stream_url'] = None
     return garden_dict
 
 

@@ -6,8 +6,6 @@ Page({
     settings: {
       notification: true,
       taskReminder: true,
-      commentNotice: true,
-      publicPost: true,
       showLocation: false
     }
   },
@@ -102,20 +100,6 @@ Page({
    */
   onTaskReminderChange(e) {
     this.updateSetting('taskReminder', e.detail.value)
-  },
-
-  /**
-   * 评论通知开关
-   */
-  onCommentNoticeChange(e) {
-    this.updateSetting('commentNotice', e.detail.value)
-  },
-
-  /**
-   * 公开动态开关
-   */
-  onPublicPostChange(e) {
-    this.updateSetting('publicPost', e.detail.value)
   },
 
   /**

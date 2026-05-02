@@ -11,9 +11,13 @@ Page({
     endDate: '',
     minDate: '',
     maxDate: '',
+    monthOptions: [1, 2, 3, 6, 12],
+    monthLabels: ['1个月', '2个月', '3个月', '6个月', '12个月'],
+    monthIndex: 0,
     months: 1,
     totalPrice: 0,
-    notes: ''
+    notes: '',
+    submitting: false
   },
 
   onLoad(options) {
@@ -83,8 +87,9 @@ Page({
    * 选择月数
    */
   onMonthsChange(e) {
-    const months = parseInt(e.detail.value)
-    this.setData({ months })
+    const monthIndex = parseInt(e.detail.value)
+    const months = this.data.monthOptions[monthIndex]
+    this.setData({ monthIndex, months })
     this.calculateEndDate()
     this.calculatePrice()
   },
@@ -139,19 +144,23 @@ Page({
    * 提交订单
    */
   submitOrder() {
-    const { garden, startDate, endDate, totalPrice, notes } = this.data
+    const { garden, startDate, endDate, totalPrice, notes, submitting } = this.data
+
+    if (submitting) return
 
     if (!startDate) {
-      wx.showToast({
-        title: '请选择开始日期',
-        icon: 'none'
-      })
+      wx.showToast({ title: '请选择开始日期', icon: 'none' })
+      return
+    }
+
+    if (!garden) {
+      wx.showToast({ title: '菜地信息加载中', icon: 'none' })
       return
     }
 
     wx.showModal({
       title: '确认租用',
-      content: `确认租用${garden.name}，租期${this.data.months}个月，总计¥${totalPrice}？`,
+      content: `租用《${garden.name}》\n租期：${this.data.months}个月\n开始：${startDate}\n结束：${endDate}\n合计：¥${totalPrice}`,
       success: (res) => {
         if (res.confirm) {
           this.createOrderRequest()
@@ -164,34 +173,32 @@ Page({
    * 创建订单请求
    */
   createOrderRequest() {
+    this.setData({ submitting: true })
     showLoading('创建订单中...')
 
     const orderData = {
       garden_id: this.data.gardenId,
       start_date: this.data.startDate,
-      end_date: this.data.endDate
+      end_date: this.data.endDate,
+      notes: this.data.notes || ''
     }
-
-    console.log('创建订单数据:', orderData)
 
     createOrder(orderData)
       .then(order => {
         hideLoading()
+        this.setData({ submitting: false })
 
-        // 显示成功提示并跳转
         wx.showModal({
           title: '订单创建成功',
-          content: '订单已创建，请在15分钟内完成支付',
+          content: '订单已创建，请尽快完成支付',
           confirmText: '去支付',
           cancelText: '稍后支付',
           success: (res) => {
             if (res.confirm) {
-              // 跳转到订单详情页并自动触发支付
               wx.redirectTo({
                 url: `/pages/order-detail/order-detail?id=${order.id}&autoPay=1`
               })
             } else {
-              // 跳转到订单详情页
               wx.redirectTo({
                 url: `/pages/order-detail/order-detail?id=${order.id}`
               })
@@ -201,10 +208,12 @@ Page({
       })
       .catch(err => {
         hideLoading()
+        this.setData({ submitting: false })
         console.error('创建订单失败:', err)
         wx.showToast({
           title: err.message || '创建订单失败',
-          icon: 'none'
+          icon: 'none',
+          duration: 3000
         })
       })
   }

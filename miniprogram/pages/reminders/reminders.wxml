@@ -85,7 +85,7 @@
           </view>
           <view class="reminder-info">
             <text class="reminder-title">{{item.title}}</text>
-            <text class="reminder-garden" wx:if="{{item.garden_name}}">{{item.garden_name}}</text>
+            <text class="reminder-garden" wx:if="{{item.garden_name && item.garden_name !== ''}}">{{item.garden_name}}</text>
           </view>
         </view>
 
@@ -109,11 +109,13 @@
         <view class="source-tag" wx:if="{{useSmartReminders && item.source}}">
           <text class="source-icon">
             {{item.source === 'iot_triggered' ? '🔔' :
-              item.source === 'rule_based' ? '📋' : '✍️'}}
+              item.source === 'rule_based' ? '📋' :
+              item.source === 'order_based' ? '📅' : '✍️'}}
           </text>
           <text class="source-text">
             {{item.source === 'iot_triggered' ? '物联网预警' :
-              item.source === 'rule_based' ? '规则生成' : '手动添加'}}
+              item.source === 'rule_based' ? '规则生成' :
+              item.source === 'order_based' ? '订单生成' : '手动添加'}}
           </text>
         </view>
 

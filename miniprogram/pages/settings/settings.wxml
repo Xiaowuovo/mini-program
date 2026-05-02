@@ -47,33 +47,11 @@
         color="#4CAF50"
       />
     </view>
-    <view class="setting-item">
-      <view class="item-left">
-        <text class="item-icon">💬</text>
-        <text class="item-title">评论通知</text>
-      </view>
-      <switch
-        checked="{{settings.commentNotice}}"
-        bindchange="onCommentNoticeChange"
-        color="#4CAF50"
-      />
-    </view>
   </view>
 
   <!-- 隐私设置 -->
   <view class="settings-section">
     <view class="section-title">隐私设置</view>
-    <view class="setting-item">
-      <view class="item-left">
-        <text class="item-icon">👁️</text>
-        <text class="item-title">公开我的动态</text>
-      </view>
-      <switch
-        checked="{{settings.publicPost}}"
-        bindchange="onPublicPostChange"
-        color="#4CAF50"
-      />
-    </view>
     <view class="setting-item">
       <view class="item-left">
         <text class="item-icon">📍</text>

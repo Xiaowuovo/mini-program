@@ -5,7 +5,7 @@ Page({
   data: {
     gardens: [],
     filteredGardens: [],
-    statusFilter: 'all', // all, available, rented, maintenance
+    statusFilter: 'all',
     isLoading: false,
     showAddDialog: false,
     newGarden: {
@@ -13,6 +13,15 @@ Page({
       location: '',
       area: '',
       price: ''
+    },
+    showEditDialog: false,
+    editGarden: {
+      id: null,
+      name: '',
+      location: '',
+      area: '',
+      price: '',
+      description: ''
     }
   },
 
@@ -100,12 +109,59 @@ Page({
 
   onEdit(e) {
     const { id } = e.currentTarget.dataset
-    wx.showModal({
-      title: '编辑菜地',
-      content: '菜地编辑功能正在开发中。\n\n如需修改菜地信息，请联系系统管理员。',
-      showCancel: false,
-      confirmText: '知道了'
+    const garden = this.data.gardens.find(g => g.id === id)
+    if (!garden) return
+
+    this.setData({
+      showEditDialog: true,
+      editGarden: {
+        id: garden.id,
+        name: garden.name,
+        location: garden.location,
+        area: String(garden.area),
+        price: String(garden.price),
+        description: garden.description || ''
+      }
     })
+  },
+
+  onHideEditDialog() {
+    this.setData({ showEditDialog: false })
+  },
+
+  onEditInputChange(e) {
+    const { field } = e.currentTarget.dataset
+    this.setData({ [`editGarden.${field}`]: e.detail.value })
+  },
+
+  onConfirmEdit() {
+    const { editGarden } = this.data
+    if (!editGarden.name || !editGarden.location || !editGarden.area || !editGarden.price) {
+      wx.showToast({ title: '请填写完整信息', icon: 'none' })
+      return
+    }
+
+    wx.showLoading({ title: '保存中...' })
+
+    updateGarden(editGarden.id, {
+      name: editGarden.name,
+      location: editGarden.location,
+      area: parseFloat(editGarden.area),
+      price: parseFloat(editGarden.price),
+      description: editGarden.description
+    })
+      .then(() => {
+        wx.showToast({ title: '更新成功', icon: 'success' })
+        this.onHideEditDialog()
+        this.loadGardens()
+      })
+      .catch(err => {
+        console.error('更新失败:', err)
+        wx.showToast({ title: '更新失败', icon: 'none' })
+      })
+      .finally(() => {
+        wx.hideLoading()
+      })
   },
 
   onShowAddDialog() {

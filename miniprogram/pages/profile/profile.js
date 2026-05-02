@@ -11,9 +11,7 @@ Page({
     },
     stats: {
       orderCount: 0,
-      gardenCount: 0,
-      postCount: 0,
-      likeCount: 0
+      gardenCount: 0
     },
     menuList: [
       {
@@ -42,20 +40,6 @@ Page({
         icon: 'https://img.icons8.com/fluency/96/alarm-clock.png',
         title: '任务提醒',
         url: '/pages/reminders/reminders',
-        badge: null
-      },
-      {
-        id: 'posts',
-        icon: 'https://img.icons8.com/fluency/96/communication.png',
-        title: '我的动态',
-        url: '/pages/community/community?mine=true',
-        badge: null
-      },
-      {
-        id: 'favorites',
-        icon: 'https://img.icons8.com/fluency/96/star.png',
-        title: '我的收藏',
-        url: '/pages/community/community?favorite=true',
         badge: null
       }
     ]
@@ -113,15 +97,6 @@ Page({
   loadStats() {
     const token = wx.getStorageSync('token')
     if (!token) {
-      // 未登录显示默认数据
-      this.setData({
-        stats: {
-          orderCount: 5,
-          gardenCount: 2,
-          postCount: 8,
-          likeCount: 32
-        }
-      })
       return
     }
 
@@ -158,11 +133,6 @@ Page({
         console.error('获取菜地统计失败:', err)
       })
 
-    // 获取动态数量
-    this.setData({
-      'stats.postCount': 8,
-      'stats.likeCount': 32
-    })
   },
 
   /**
