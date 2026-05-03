@@ -159,39 +159,28 @@ class IoTSimulator:
             return max(30, min(95, value))
 
         elif sensor_type == "soil_moisture":
-            # 土壤湿度：模拟浇水和蒸发
-            # 假设每天早上8点浇水
-            hours_since_watering = (hour - 8) % 24
-
-            # 浇水后的湿度曲线 (指数衰减)
-            if hours_since_watering >= 0:
-                moisture_loss = 25 * (1 - math.exp(-hours_since_watering / 12))
-            else:
-                moisture_loss = 25 * (1 - math.exp((24 + hours_since_watering) / 12))
-
-            base_moisture = 70 - moisture_loss
-            noise = random.uniform(-3, 3)
-
-            value = base_moisture + noise
-            return max(15, min(85, value))
+            # 土壤湿度：每块菜地固定浇水时间（由 garden_id 决定），指数衰减
+            watering_hour = 7 + (garden_id % 4) * 2   # 7/9/11/13 点
+            decay_rate = 0.04 + 0.01 * (garden_id % 3)
+            t_precise = hour + 0.0
+            hours_since = (t_precise - watering_hour) % 24
+            moisture_curve = 78 * math.exp(-decay_rate * hours_since)
+            base_adj = 5 * math.sin(garden_id * 1.3)
+            noise = random.uniform(-2, 2)
+            value = moisture_curve + base_adj + noise
+            return max(18, min(88, value))
 
         elif sensor_type == "light":
-            # 光照：严格遵循昼夜规律
+            # 光照：严格昼夜规律 + 季节峰值
             if 6 <= hour < 20:
-                # 白天：正弦波模拟太阳轨迹
-                peak_hour = 13  # 下午1点光照最强
-                light_intensity = 8000 * math.sin((hour - 6) * math.pi / 14)
-
-                # 云层影响 (20%概率)
-                if random.random() < 0.2:
-                    light_intensity *= random.uniform(0.4, 0.8)
-
+                peak_lux = 85000 - 20000 * abs(math.sin(day_of_year * 2 * math.pi / 365))
+                light_intensity = peak_lux * math.sin((hour - 6) * math.pi / 14)
+                if random.random() < 0.15:
+                    light_intensity *= random.uniform(0.2, 0.6)
                 noise = random.uniform(-500, 500)
                 value = light_intensity + noise
             else:
-                # 夜晚
-                value = random.uniform(0, 50)
-
+                value = random.uniform(0, 80)
             return max(0, value)
 
         elif sensor_type == "soil_ph":

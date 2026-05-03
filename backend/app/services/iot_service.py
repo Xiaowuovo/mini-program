@@ -312,106 +312,78 @@ class IoTService:
     def _generate_realistic_value(sensor_type: str, garden_id: int) -> float:
         """
         生成真实场景的传感器数值
-        考虑时间、季节、天气等因素
+        基于物理模型：平滑昼夜曲线 + 季节因子 + 传感器间相关性
         """
         import random
+        import math
         from datetime import datetime
 
         now = datetime.now()
         hour = now.hour
+        minute = now.minute
         month = now.month
+        day_of_year = now.timetuple().tm_yday
 
-        # 基础值 + 时间波动 + 随机噪声
+        # 精确小时（含分钟）
+        t = hour + minute / 60.0
+
+        # ── 季节基准温度（正弦年周期，中国华中地区） ──
+        season_temp = 18 + 12 * math.sin((day_of_year - 80) * 2 * math.pi / 365)
+
         if sensor_type == "temperature":
-            # 温度：根据时间和季节变化
-            base_temp = 20.0  # 基础温度
-
-            # 季节因素 (冬季低，夏季高)
-            if month in [12, 1, 2]:  # 冬季
-                base_temp = 12.0
-            elif month in [6, 7, 8]:  # 夏季
-                base_temp = 28.0
-            elif month in [3, 4, 5]:  # 春季
-                base_temp = 18.0
-            else:  # 秋季
-                base_temp = 20.0
-
-            # 时间因素 (白天高，夜晚低)
-            if 6 <= hour < 10:  # 早晨
-                temp_offset = random.uniform(-2, 2)
-            elif 10 <= hour < 16:  # 中午
-                temp_offset = random.uniform(3, 8)
-            elif 16 <= hour < 20:  # 傍晚
-                temp_offset = random.uniform(0, 4)
-            else:  # 夜晚
-                temp_offset = random.uniform(-5, -1)
-
-            value = base_temp + temp_offset + random.uniform(-1, 1)
-            return max(5, min(40, value))  # 限制在5-40°C
+            # 昼夜温差：午后2点最高，凌晨5点最低（平滑正弦）
+            daily_amp = 5.0 + 2.0 * abs(math.sin(day_of_year * 2 * math.pi / 365))
+            daily = daily_amp * math.sin((t - 5) * math.pi / 12)
+            noise = random.gauss(0, 0.8)
+            value = season_temp + daily + noise
+            return round(max(0, min(42, value)), 1)
 
         elif sensor_type == "humidity":
-            # 湿度：与温度反相关
-            base_humidity = 60.0
-
-            # 时间因素 (早晨和夜晚湿度高)
-            if 5 <= hour < 9:  # 早晨有露水
-                humidity_offset = random.uniform(10, 20)
-            elif 11 <= hour < 16:  # 中午较干燥
-                humidity_offset = random.uniform(-15, -5)
-            elif 20 <= hour or hour < 5:  # 夜晚湿度高
-                humidity_offset = random.uniform(5, 15)
-            else:
-                humidity_offset = random.uniform(-5, 5)
-
-            value = base_humidity + humidity_offset + random.uniform(-3, 3)
-            return max(30, min(95, value))  # 限制在30-95%
+            # 与温度反相关；早晨最湿（露水），午后最干
+            temp_approx = season_temp + 5 * math.sin((t - 5) * math.pi / 12)
+            base_hum = 75 - 0.8 * (temp_approx - 15)  # 温度越高，湿度越低
+            daily_hum = 8 * math.cos((t - 5) * math.pi / 12)  # 早晨多+8，午后少
+            noise = random.gauss(0, 3)
+            value = base_hum + daily_hum + noise
+            return round(max(30, min(98, value)), 1)
 
         elif sensor_type == "soil_moisture":
-            # 土壤湿度：相对稳定，但会缓慢下降
-            # 模拟浇水后的湿度变化
-            base_moisture = 55.0
-
-            # 根据菜地ID生成不同的湿度状态（模拟不同浇水时间）
-            garden_offset = (garden_id * 7) % 30 - 15  # -15到+15的偏移
-
-            # 时间因素 (白天蒸发快，湿度下降)
-            if 10 <= hour < 18:
-                moisture_offset = random.uniform(-10, -3)
-            else:
-                moisture_offset = random.uniform(-3, 3)
-
-            value = base_moisture + garden_offset + moisture_offset + random.uniform(-2, 2)
-            return max(15, min(85, value))  # 限制在15-85%
+            # 模拟：每块菜地有固定浇水时间（由 garden_id 决定），浇后指数衰减
+            watering_hour = 7 + (garden_id % 4) * 2   # 7/9/11/13 点浇水
+            decay_rate = 0.04 + 0.01 * ((garden_id % 3))  # 不同土质蒸发速度
+            hours_since = (t - watering_hour) % 24
+            # 浇后瞬间 ~78%，24h后 ~45%
+            moisture_curve = 78 * math.exp(-decay_rate * hours_since)
+            # 各菜地基底不同（土质差异）
+            base_adj = 5 * math.sin(garden_id * 1.3)
+            noise = random.gauss(0, 1.5)
+            value = moisture_curve + base_adj + noise
+            return round(max(18, min(88, value)), 1)
 
         elif sensor_type == "light":
-            # 光照：根据时间变化显著
-            if 6 <= hour < 8:  # 清晨
-                value = random.uniform(500, 2000)
-            elif 8 <= hour < 11:  # 上午
-                value = random.uniform(3000, 6000)
-            elif 11 <= hour < 15:  # 中午
-                value = random.uniform(6000, 10000)
-            elif 15 <= hour < 18:  # 下午
-                value = random.uniform(3000, 7000)
-            elif 18 <= hour < 20:  # 傍晚
-                value = random.uniform(500, 2000)
-            else:  # 夜晚
-                value = random.uniform(0, 100)
-
-            # 添加云层影响
-            if random.random() < 0.2:  # 20%概率有云
-                value *= random.uniform(0.3, 0.7)
-
-            return max(0, value)
+            # 严格昼夜模型：日出6点，日落20点，峰值13点
+            if 6 <= t < 20:
+                peak_lux = 85000 - 20000 * abs(math.sin(day_of_year * 2 * math.pi / 365))
+                lux = peak_lux * math.sin((t - 6) * math.pi / 14)
+                # 云层随机遮挡（15%概率）
+                if random.random() < 0.15:
+                    lux *= random.uniform(0.2, 0.6)
+                noise = random.gauss(0, 300)
+                value = lux + noise
+            else:
+                value = random.uniform(0, 80)   # 夜间环境光
+            return round(max(0, value), 0)
 
         elif sensor_type == "soil_ph":
-            # pH值：相对稳定
-            base_ph = 6.5
-            value = base_ph + random.uniform(-0.3, 0.3)
-            return max(5.5, min(8.0, value))
+            # pH 缓慢年变化 + 菜地差异（有机质多的偏酸）
+            base_ph = 6.3 + 0.4 * ((garden_id % 5) / 5.0)
+            seasonal = 0.15 * math.sin(month * math.pi / 12)
+            noise = random.gauss(0, 0.08)
+            value = base_ph + seasonal + noise
+            return round(max(5.5, min(8.0, value)), 2)
 
         else:
-            return random.uniform(0, 100)
+            return round(random.uniform(30, 70), 1)
 
     @staticmethod
     def _generate_random_value(sensor_type: str) -> float:

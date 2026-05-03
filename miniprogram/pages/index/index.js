@@ -1,6 +1,9 @@
 // pages/index/index.js
 const { getGardenList } = require('../../api/garden.js')
 const { getPublicStats } = require('../../api/admin.js')
+const { getOrderList } = require('../../api/order.js')
+const { getReminderStatistics } = require('../../api/smart-reminder.js')
+const { getPostList } = require('../../api/community.js')
 const { showLoading, hideLoading } = require('../../utils/util.js')
 
 Page({
@@ -48,7 +51,11 @@ Page({
       { id: 2, icon: '💧', title: '浇水技巧', desc: '科学灌溉' },
       { id: 3, icon: '🌿', title: '施肥方法', desc: '营养均衡' },
       { id: 4, icon: '🐛', title: '病虫害防治', desc: '绿色防控' }
-    ]
+    ],
+
+    // 社区帖子
+    communityPosts: [],
+    communityLoading: false
   },
 
   onLoad() {
@@ -63,17 +70,21 @@ Page({
     this.loadUserInfo()
     this.loadHotGardens()
     this.loadPublicStats()
+    this.loadCommunityPosts()
   },
 
   onPullDownRefresh() {
     this.initPage()
+    this.loadUserRelatedStats()
     setTimeout(() => {
       wx.stopPullDownRefresh()
-    }, 1000)
+    }, 1500)
   },
 
   onShow() {
     this.loadUserInfo()
+    this.loadPublicStats()
+    this.loadUserRelatedStats()
   },
 
   /**
@@ -138,6 +149,60 @@ Page({
       .catch(err => {
         console.error('加载统计数据失败:', err)
       })
+  },
+
+  /**
+   * 加载用户相关实时统计（需要登录）
+   */
+  loadUserRelatedStats() {
+    const userInfo = wx.getStorageSync('userInfo')
+    const token = wx.getStorageSync('token')
+    if (!userInfo || !token) return
+
+    // 活跃菜地数
+    getOrderList({ status: 'active', limit: 1 })
+      .then(res => {
+        this.setData({ myGardenCount: res.total || 0 })
+      })
+      .catch(() => {})
+
+    // 待处理提醒数
+    getReminderStatistics()
+      .then(res => {
+        this.setData({ pendingTasks: res.pending || 0 })
+      })
+      .catch(() => {})
+  },
+
+  /**
+   * 加载社区最新帖子
+   */
+  loadCommunityPosts() {
+    this.setData({ communityLoading: true })
+    getPostList({ limit: 3, skip: 0 })
+      .then(res => {
+        const posts = (res.items || []).map(p => ({
+          ...p,
+          timeAgo: this._timeAgo(p.created_at)
+        }))
+        this.setData({ communityPosts: posts, communityLoading: false })
+      })
+      .catch(() => {
+        this.setData({ communityLoading: false })
+      })
+  },
+
+  /**
+   * 时间格式化：X分钟前 / X小时前 / X天前
+   */
+  _timeAgo(isoStr) {
+    if (!isoStr) return ''
+    const diff = (Date.now() - new Date(isoStr).getTime()) / 1000
+    if (diff < 60) return '刚刚'
+    if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`
+    if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`
+    if (diff < 2592000) return `${Math.floor(diff / 86400)}天前`
+    return new Date(isoStr).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
   },
 
   /**
@@ -241,6 +306,25 @@ Page({
       content: knowledgeMap[id] || '更多知识正在整理中...',
       showCancel: false,
       confirmText: '知道了'
+    })
+  },
+
+  /**
+   * 跳转到社区
+   */
+  navigateToCommunity() {
+    wx.switchTab({
+      url: '/pages/community/community'
+    })
+  },
+
+  /**
+   * 跳转到帖子详情
+   */
+  navigateToPost(e) {
+    const id = e.currentTarget.dataset.id
+    wx.navigateTo({
+      url: `/pages/post-detail/post-detail?id=${id}`
     })
   },
 

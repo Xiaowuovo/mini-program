@@ -274,8 +274,8 @@ class SmartReminderEngine:
         now = datetime.now()
         days_until_harvest = (record.expected_harvest_date - now).days
 
-        # 提前3天提醒
-        if 0 <= days_until_harvest <= 3:
+        # 提前7天提醒
+        if 0 <= days_until_harvest <= 7:
             crop = db.query(Crop).filter(Crop.id == record.crop_id).first()
 
             # 检查是否已有收获提醒
@@ -324,22 +324,43 @@ class SmartReminderEngine:
 
         return last_reminder.completed_at if last_reminder else None
 
+    # 各类提醒的最小去重间隔（小时）
+    _DEDUP_HOURS = {
+        "watering": 20,        # 不足1天不再重复
+        "fertilizing": 120,    # 5天
+        "weeding": 96,         # 4天
+        "pest_check": 48,      # 2天
+        "harvest": 24,         # 1天
+        "environment_alert": 2 # 环境警报 2h 一条
+    }
+
     @staticmethod
     def _save_reminder(db: Session, reminder: SmartReminder) -> SmartReminder:
-        """保存提醒（去重）"""
-        # 检查是否已存在相同的提醒
+        """保存提醒（频率感知去重）"""
+        dedup_hours = SmartReminderEngine._DEDUP_HOURS.get(
+            reminder.reminder_type, 12
+        )
+        cutoff = datetime.now() - timedelta(hours=dedup_hours)
+
         existing = db.query(SmartReminder).filter(
             and_(
                 SmartReminder.user_id == reminder.user_id,
                 SmartReminder.planting_record_id == reminder.planting_record_id,
                 SmartReminder.reminder_type == reminder.reminder_type,
                 SmartReminder.status == "pending",
-                SmartReminder.created_at >= datetime.now() - timedelta(hours=6)
+                SmartReminder.created_at >= cutoff
             )
         ).first()
 
         if existing:
             return existing
+
+        # 将提醒时间设置为明天早上9点（更符合使用习惯）
+        tomorrow_9am = (datetime.now() + timedelta(days=1)).replace(
+            hour=9, minute=0, second=0, microsecond=0
+        )
+        if reminder.reminder_type not in ("environment_alert", "harvest"):
+            reminder.remind_time = tomorrow_9am
 
         db.add(reminder)
         db.commit()

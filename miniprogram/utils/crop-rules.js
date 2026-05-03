@@ -78,6 +78,82 @@ const CROP_TYPES = {
       { name: '肉质根膨大期', days: 50, tasks: ['追肥', '防虫'] },
       { name: '成熟期', days: 20, tasks: ['控水', '准备采收'] }
     ]
+  },
+  'pepper': {
+    name: '辣椒',
+    growthDays: 100,
+    wateringInterval: 2,
+    fertilizingInterval: 12,
+    weedingInterval: 10,
+    optimalTemp: { min: 20, max: 30 },
+    optimalHumidity: { min: 55, max: 75 },
+    stages: [
+      { name: '育苗期', days: 25, tasks: ['控温保湿', '及时间苗'] },
+      { name: '移栽缓苗期', days: 10, tasks: ['遮阳缓苗', '适量浇水'] },
+      { name: '旺盛生长期', days: 30, tasks: ['追施氮钾肥', '搭架'] },
+      { name: '开花结果期', days: 35, tasks: ['控制氮肥', '补充磷钾', '病虫害防治'] }
+    ]
+  },
+  'eggplant': {
+    name: '茄子',
+    growthDays: 90,
+    wateringInterval: 2,
+    fertilizingInterval: 10,
+    weedingInterval: 10,
+    optimalTemp: { min: 22, max: 32 },
+    optimalHumidity: { min: 60, max: 80 },
+    stages: [
+      { name: '育苗期', days: 25, tasks: ['保温控湿', '充足光照'] },
+      { name: '缓苗期', days: 10, tasks: ['遮阳', '小水勤浇'] },
+      { name: '茎叶生长期', days: 25, tasks: ['追肥整枝', '防蚜虫'] },
+      { name: '结果期', days: 30, tasks: ['重施钾肥', '及时采收', '防棉铃虫'] }
+    ]
+  },
+  'green_bean': {
+    name: '豆角',
+    growthDays: 70,
+    wateringInterval: 2,
+    fertilizingInterval: 10,
+    weedingInterval: 10,
+    optimalTemp: { min: 18, max: 28 },
+    optimalHumidity: { min: 55, max: 75 },
+    stages: [
+      { name: '发芽期', days: 7, tasks: ['保温保湿', '防烂种'] },
+      { name: '幼苗期', days: 15, tasks: ['控水蹲苗', '搭架引蔓'] },
+      { name: '抽蔓开花期', days: 20, tasks: ['追施磷肥', '人工引蔓'] },
+      { name: '结荚采收期', days: 28, tasks: ['补水补肥', '每2-3天采收'] }
+    ]
+  },
+  'corn': {
+    name: '玉米',
+    growthDays: 110,
+    wateringInterval: 5,
+    fertilizingInterval: 15,
+    weedingInterval: 14,
+    optimalTemp: { min: 18, max: 32 },
+    optimalHumidity: { min: 50, max: 75 },
+    stages: [
+      { name: '播种出苗期', days: 10, tasks: ['土壤保湿', '防鸟'] },
+      { name: '苗期', days: 25, tasks: ['蹲苗控水', '除草'] },
+      { name: '拔节期', days: 30, tasks: ['重施氮肥', '培土防倒'] },
+      { name: '抽穗开花期', days: 15, tasks: ['保水', '人工辅助授粉'] },
+      { name: '灌浆成熟期', days: 30, tasks: ['补充钾肥', '防玉米螟'] }
+    ]
+  },
+  'radish': {
+    name: '萝卜',
+    growthDays: 50,
+    wateringInterval: 3,
+    fertilizingInterval: 15,
+    weedingInterval: 10,
+    optimalTemp: { min: 10, max: 22 },
+    optimalHumidity: { min: 55, max: 75 },
+    stages: [
+      { name: '发芽期', days: 5, tasks: ['均匀浇水', '防板结'] },
+      { name: '幼苗期', days: 10, tasks: ['间苗定株', '施少量氮肥'] },
+      { name: '肉质根膨大期', days: 28, tasks: ['增施磷钾', '均匀给水'] },
+      { name: '成熟期', days: 7, tasks: ['停止施肥', '适时采收'] }
+    ]
   }
 }
 

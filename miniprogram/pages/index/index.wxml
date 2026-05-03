@@ -198,6 +198,75 @@
     </view>
   </view>
 
+  <!-- 社区互动 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title-wrapper">
+        <text class="section-icon">💬</text>
+        <text class="section-title">社区互动</text>
+      </view>
+      <view class="section-more" bindtap="navigateToCommunity">
+        <text>查看更多</text>
+        <text class="arrow">→</text>
+      </view>
+    </view>
+
+    <!-- 加载中骨架 -->
+    <view wx:if="{{communityLoading}}" class="community-skeleton">
+      <view class="skeleton-card" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
+    </view>
+
+    <!-- 帖子列表 -->
+    <view class="post-list" wx:elif="{{communityPosts.length > 0}}">
+      <view
+        wx:for="{{communityPosts}}"
+        wx:key="id"
+        class="post-card"
+        bindtap="navigateToPost"
+        data-id="{{item.id}}"
+      >
+        <view class="post-header">
+          <image
+            class="user-avatar"
+            src="{{item.user_avatar || '/images/default-avatar.png'}}"
+            mode="aspectFill"
+          ></image>
+          <view class="post-user">
+            <view class="user-name">{{item.user_nickname || '菜园达人'}}</view>
+            <view class="post-time">{{item.timeAgo}}</view>
+          </view>
+          <view class="post-tag" wx:if="{{item.post_type}}">
+            {{item.post_type === 'experience' ? '经验' : item.post_type === 'question' ? '提问' : item.post_type === 'show' ? '晒图' : '动态'}}
+          </view>
+        </view>
+        <view class="post-content">
+          <view class="post-title" wx:if="{{item.title}}">{{item.title}}</view>
+          <view class="post-text">{{item.content}}</view>
+        </view>
+        <view class="post-footer">
+          <view class="post-stat">
+            <text class="post-stat-icon">👁</text>
+            <text>{{item.view_count || 0}}</text>
+          </view>
+          <view class="post-stat">
+            <text class="post-stat-icon">❤️</text>
+            <text>{{item.like_count || 0}}</text>
+          </view>
+          <view class="post-stat">
+            <text class="post-stat-icon">💬</text>
+            <text>{{item.comment_count || 0}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:else class="community-empty" bindtap="navigateToCommunity">
+      <text class="community-empty-icon">💬</text>
+      <text class="community-empty-text">社区暂无动态，来发第一帖！</text>
+    </view>
+  </view>
+
   <!-- 底部安全区 -->
   <view class="safe-bottom"></view>
 </view>

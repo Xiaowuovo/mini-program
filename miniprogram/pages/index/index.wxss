@@ -491,6 +491,59 @@
   color: #999;
 }
 
+/* 社区互动 */
+.post-tag {
+  font-size: 20rpx;
+  color: #4CAF50;
+  background: #E8F5E9;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  flex-shrink: 0;
+}
+
+.post-stat-icon {
+  font-size: 26rpx;
+}
+
+.community-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0;
+  background: #FFF;
+  border-radius: 20rpx;
+}
+
+.community-empty-icon {
+  font-size: 80rpx;
+  opacity: 0.4;
+  margin-bottom: 16rpx;
+}
+
+.community-empty-text {
+  font-size: 26rpx;
+  color: #bbb;
+}
+
+.community-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 15rpx;
+}
+
+.skeleton-card {
+  height: 160rpx;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  border-radius: 20rpx;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* 社区动态 */
 .post-list {
   display: flex;
@@ -572,10 +625,6 @@
   gap: 6rpx;
   font-size: 22rpx;
   color: #999;
-}
-
-.stat-icon {
-  font-size: 28rpx;
 }
 
 /* 空状态 */
