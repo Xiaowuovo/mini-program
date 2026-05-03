@@ -17,6 +17,7 @@ class Post(Base):
     images = Column(JSON, comment="图片URL列表")
     like_count = Column(Integer, default=0, comment="点赞数")
     comment_count = Column(Integer, default=0, comment="评论数")
+    view_count = Column(Integer, default=0, comment="浏览量")
     created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="发布时间")
 
     def __repr__(self):

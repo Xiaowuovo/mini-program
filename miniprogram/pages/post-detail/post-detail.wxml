@@ -5,24 +5,20 @@
   </view>
 
   <view wx:if="{{!loading && post}}" class="detail-content">
-    <!-- 用户信息 -->
+    <!-- 作者信息 -->
     <view class="author-section">
-      <image src="{{post.user_avatar || '/images/default-avatar.png'}}" class="author-avatar"></image>
+      <image src="{{post.user_avatar || 'https://img.icons8.com/fluency/96/user-male-circle.png'}}" class="author-avatar"></image>
       <view class="author-info">
         <text class="author-name">{{post.user_nickname || '匿名用户'}}</text>
         <text class="post-time">{{post.created_at}}</text>
       </view>
-      <button wx:if="{{post.is_author}}" class="delete-btn" bindtap="handleDelete">
-        删除
-      </button>
+      <button wx:if="{{post.is_author}}" class="delete-btn" bindtap="handleDelete">删除</button>
     </view>
 
     <!-- 帖子内容 -->
     <view class="content-section">
       <view class="post-title" wx:if="{{post.title}}">{{post.title}}</view>
       <view class="post-content">{{post.content}}</view>
-
-      <!-- 图片展示 -->
       <view class="post-images" wx:if="{{post.images && post.images.length > 0}}">
         <image
           wx:for="{{post.images}}"
@@ -56,18 +52,92 @@
     <!-- 评论列表 -->
     <view class="comments-section">
       <view class="section-header">
-        <text class="section-title">全部评论 {{comments.length}}</text>
+        <text class="section-title">全部评论（{{post.comment_count || 0}}）</text>
       </view>
 
       <view wx:if="{{comments.length > 0}}" class="comment-list">
         <view wx:for="{{comments}}" wx:key="id" class="comment-item">
-          <image src="{{item.user_avatar || '/images/default-avatar.png'}}" class="comment-avatar"></image>
-          <view class="comment-content">
+          <!-- 顶层评论 -->
+          <image src="{{item.user_avatar || 'https://img.icons8.com/fluency/96/user-male-circle.png'}}" class="comment-avatar"></image>
+          <view class="comment-body">
             <view class="comment-header">
               <text class="comment-user">{{item.user_nickname || '匿名'}}</text>
               <text class="comment-time">{{item.created_at}}</text>
             </view>
             <view class="comment-text">{{item.content}}</view>
+            <!-- 评论图片 -->
+            <view class="comment-images" wx:if="{{item.images && item.images.length > 0}}">
+              <image
+                wx:for="{{item.images}}"
+                wx:for-item="img"
+                wx:key="index"
+                src="{{img}}"
+                mode="aspectFill"
+                class="comment-image"
+                bindtap="previewCommentImage"
+                data-urls="{{item.images}}"
+                data-current="{{img}}"
+              ></image>
+            </view>
+            <!-- 操作行 -->
+            <view class="comment-actions">
+              <view class="comment-action" bindtap="setReplyTo"
+                data-comment-id="{{item.id}}"
+                data-user-id="{{item.user_id}}"
+                data-nickname="{{item.user_nickname || '匿名'}}">
+                <text class="action-icon-sm">💬</text>
+                <text class="action-text-sm">回复</text>
+              </view>
+              <view class="comment-action danger" wx:if="{{item.user_id === currentUserId}}"
+                bindtap="handleDeleteComment" data-id="{{item.id}}">
+                <text class="action-icon-sm">🗑️</text>
+                <text class="action-text-sm">删除</text>
+              </view>
+            </view>
+
+            <!-- 回复列表 -->
+            <view class="replies-block" wx:if="{{item.replies && item.replies.length > 0}}">
+              <view wx:for="{{item.replies}}" wx:for-item="reply" wx:key="id" class="reply-item">
+                <image src="{{reply.user_avatar || 'https://img.icons8.com/fluency/96/user-male-circle.png'}}" class="reply-avatar"></image>
+                <view class="reply-body">
+                  <view class="reply-header">
+                    <text class="reply-user">{{reply.user_nickname || '匿名'}}</text>
+                    <text wx:if="{{reply.reply_to_nickname}}" class="reply-to"> 回复 @{{reply.reply_to_nickname}}</text>
+                    <text class="reply-time">{{reply.created_at}}</text>
+                  </view>
+                  <view class="reply-text">{{reply.content}}</view>
+                  <!-- 回复图片 -->
+                  <view class="comment-images" wx:if="{{reply.images && reply.images.length > 0}}">
+                    <image
+                      wx:for="{{reply.images}}"
+                      wx:for-item="rimg"
+                      wx:key="index"
+                      src="{{rimg}}"
+                      mode="aspectFill"
+                      class="comment-image"
+                      bindtap="previewCommentImage"
+                      data-urls="{{reply.images}}"
+                      data-current="{{rimg}}"
+                    ></image>
+                  </view>
+                  <!-- 回复操作 -->
+                  <view class="comment-actions">
+                    <view class="comment-action" bindtap="setReplyTo"
+                      data-comment-id="{{item.id}}"
+                      data-user-id="{{reply.user_id}}"
+                      data-nickname="{{reply.user_nickname || '匿名'}}">
+                      <text class="action-icon-sm">💬</text>
+                      <text class="action-text-sm">回复</text>
+                    </view>
+                    <view class="comment-action danger" wx:if="{{reply.user_id === currentUserId}}"
+                      bindtap="handleDeleteComment" data-id="{{reply.id}}">
+                      <text class="action-icon-sm">🗑️</text>
+                      <text class="action-text-sm">删除</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
           </view>
         </view>
       </view>
@@ -80,30 +150,45 @@
 
   <!-- 底部操作栏 -->
   <view class="bottom-bar" wx:if="{{!loading && post}}">
-    <view class="comment-input-wrapper">
+    <!-- 回复提示条 -->
+    <view class="reply-hint" wx:if="{{replyTo}}">
+      <text class="reply-hint-text">回复 @{{replyTo.nickname}}</text>
+      <text class="reply-cancel" bindtap="cancelReply">✕</text>
+    </view>
+
+    <!-- 已选图片预览 -->
+    <view class="selected-images" wx:if="{{commentImages.length > 0}}">
+      <view wx:for="{{commentImages}}" wx:key="index" class="selected-img-wrap">
+        <image src="{{item}}" mode="aspectFill" class="selected-img"></image>
+        <view class="remove-img" bindtap="removeCommentImage" data-index="{{index}}">✕</view>
+      </view>
+    </view>
+
+    <!-- 输入区 -->
+    <view class="input-row">
       <input
         class="comment-input"
         type="text"
-        placeholder="说点什么..."
+        placeholder="{{replyTo ? '回复 @' + replyTo.nickname + '...' : '说点什么...'}}"
         value="{{commentInput}}"
         bindinput="onCommentInput"
         confirm-type="send"
         bindconfirm="sendComment"
       />
+      <view class="img-pick-btn" bindtap="chooseCommentImage">
+        <text>🖼</text>
+      </view>
+      <button class="send-btn" bindtap="sendComment" disabled="{{submitting}}">
+        {{submitting ? '...' : '发送'}}
+      </button>
     </view>
 
-    <view class="action-buttons">
-      <view
-        class="action-btn {{post.liked ? 'liked' : ''}}"
-        bindtap="handleLike"
-      >
+    <!-- 点赞行 -->
+    <view class="like-row">
+      <view class="action-btn {{post.liked ? 'liked' : ''}}" bindtap="handleLike">
         <text class="btn-icon">{{post.liked ? '❤️' : '🤍'}}</text>
-        <text class="btn-text">{{post.like_count || 0}}</text>
+        <text class="btn-text">{{post.like_count || 0}} 点赞</text>
       </view>
-
-      <button class="send-btn" bindtap="sendComment" disabled="{{submitting}}">
-        {{submitting ? '发送中...' : '发送'}}
-      </button>
     </view>
   </view>
 </view>

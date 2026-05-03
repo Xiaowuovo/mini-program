@@ -2,7 +2,7 @@
 .post-detail-page {
   background-color: #f5f5f5;
   min-height: 100vh;
-  padding-bottom: 120rpx;
+  padding-bottom: 220rpx;
 }
 
 .loading {
@@ -177,6 +177,114 @@
   line-height: 1.6;
 }
 
+/* 评论/回复图片 */
+.comment-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 14rpx;
+}
+
+.comment-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 10rpx;
+  object-fit: cover;
+}
+
+/* 评论操作行 */
+.comment-actions {
+  display: flex;
+  gap: 30rpx;
+  margin-top: 14rpx;
+}
+
+.comment-action {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.comment-action.danger .action-text-sm {
+  color: #F44336;
+}
+
+.action-icon-sm {
+  font-size: 24rpx;
+}
+
+.action-text-sm {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+/* 评论体（头像右侧全部内容） */
+.comment-body {
+  flex: 1;
+}
+
+/* 回复块 */
+.replies-block {
+  background-color: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  margin-top: 16rpx;
+}
+
+.reply-item {
+  display: flex;
+  gap: 16rpx;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #eeeeee;
+}
+
+.reply-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.reply-avatar {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.reply-body {
+  flex: 1;
+}
+
+.reply-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.reply-user {
+  font-size: 24rpx;
+  color: #555555;
+  font-weight: 500;
+}
+
+.reply-to {
+  font-size: 22rpx;
+  color: #4CAF50;
+}
+
+.reply-time {
+  font-size: 20rpx;
+  color: #bbbbbb;
+  margin-left: auto;
+}
+
+.reply-text {
+  font-size: 26rpx;
+  color: #333333;
+  line-height: 1.6;
+}
+
 .empty-comments {
   padding: 100rpx 0;
   text-align: center;
@@ -191,33 +299,123 @@
   left: 0;
   right: 0;
   background-color: #ffffff;
-  padding: 20rpx 30rpx;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  padding: 16rpx 24rpx;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
   z-index: 100;
 }
 
-.comment-input-wrapper {
-  margin-bottom: 20rpx;
+/* 回复提示条 */
+.reply-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f0f8f0;
+  border-radius: 10rpx;
+  padding: 10rpx 20rpx;
+  margin-bottom: 12rpx;
+}
+
+.reply-hint-text {
+  font-size: 24rpx;
+  color: #4CAF50;
+}
+
+.reply-cancel {
+  font-size: 28rpx;
+  color: #999999;
+  padding: 4rpx 12rpx;
+}
+
+/* 已选图片预览 */
+.selected-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-bottom: 12rpx;
+}
+
+.selected-img-wrap {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.selected-img {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 10rpx;
+  object-fit: cover;
+}
+
+.remove-img {
+  position: absolute;
+  top: -12rpx;
+  right: -12rpx;
+  width: 36rpx;
+  height: 36rpx;
+  background-color: rgba(0,0,0,0.5);
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  line-height: 36rpx;
+  text-align: center;
+}
+
+/* 输入区 */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
 }
 
 .comment-input {
-  width: 100%;
-  padding: 20rpx;
+  flex: 1;
+  padding: 16rpx 24rpx;
   background-color: #f5f5f5;
   border-radius: 50rpx;
   font-size: 28rpx;
+  min-height: 72rpx;
 }
 
-.action-buttons {
+.img-pick-btn {
+  width: 72rpx;
+  height: 72rpx;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 50%;
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.send-btn {
+  padding: 16rpx 36rpx;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: #ffffff;
+  border-radius: 50rpx;
+  font-size: 26rpx;
+  flex-shrink: 0;
+}
+
+.send-btn[disabled] {
+  opacity: 0.6;
+}
+
+/* 点赞行 */
+.like-row {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  padding: 16rpx 30rpx;
+  padding: 12rpx 26rpx;
   background-color: #f5f5f5;
   border-radius: 50rpx;
   gap: 10rpx;
@@ -228,26 +426,14 @@
 }
 
 .btn-icon {
-  font-size: 32rpx;
+  font-size: 30rpx;
 }
 
 .btn-text {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #666666;
 }
 
 .action-btn.liked .btn-text {
   color: #FF6B6B;
-}
-
-.send-btn {
-  padding: 16rpx 50rpx;
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-  color: #ffffff;
-  border-radius: 50rpx;
-  font-size: 28rpx;
-}
-
-.send-btn[disabled] {
-  opacity: 0.6;
 }

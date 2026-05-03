@@ -102,6 +102,13 @@ async def get_post(
         ).first()
         post_dict["is_liked"] = like is not None
 
+    # 实时增加浏览量
+    try:
+        post.view_count = (post.view_count or 0) + 1
+        db.commit()
+    except Exception:
+        db.rollback()
+
     return PostDetail(**post_dict)
 
 
@@ -286,37 +293,54 @@ async def get_post_comments(
     _: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
-    """获取指定帖子的评论列表"""
-
-    # 检查帖子是否存在
+    """获取指定帖子的评论列表，返回嵌套结构（一层回复）"""
     post = db.query(Post).filter(Post.id == post_id).first()
-
     if not post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="帖子不存在"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="帖子不存在")
 
-    # 获取总数
-    total = db.query(Comment).filter(Comment.post_id == post_id).count()
+    # 仅查顶层评论（parent_id 为空），分页作用于顶层评论
+    top_comments = db.query(Comment).filter(
+        Comment.post_id == post_id,
+        Comment.parent_id == None
+    ).order_by(Comment.created_at.asc()).offset(skip).limit(limit).all()
 
-    # 分页查询
-    comments = db.query(Comment).filter(Comment.post_id == post_id)\
-        .order_by(Comment.created_at.asc()).offset(skip).limit(limit).all()
+    top_total = db.query(Comment).filter(
+        Comment.post_id == post_id,
+        Comment.parent_id == None
+    ).count()
 
-    # 构造详情列表（包含用户信息）
-    comment_details = []
-    for comment in comments:
-        user = db.query(User).filter(User.id == comment.user_id).first()
+    # 构建用户缓存
+    user_cache = {}
 
-        comment_dict = CommentDetail.from_orm(comment).dict()
-        if user:
-            comment_dict["user_nickname"] = user.nickname
-            comment_dict["user_avatar"] = user.avatar
+    def get_user(uid):
+        if uid not in user_cache:
+            user_cache[uid] = db.query(User).filter(User.id == uid).first()
+        return user_cache[uid]
 
-        comment_details.append(CommentDetail(**comment_dict))
+    def build_comment_detail(c):
+        d = CommentDetail.from_orm(c).dict()
+        u = get_user(c.user_id)
+        if u:
+            d["user_nickname"] = u.nickname
+            d["user_avatar"] = u.avatar
+        if c.reply_to_user_id:
+            ru = get_user(c.reply_to_user_id)
+            d["reply_to_nickname"] = ru.nickname if ru else None
+        d["replies"] = []
+        return d
 
-    return CommentListResponse(total=total, items=comment_details)
+    result = []
+    for tc in top_comments:
+        tc_dict = build_comment_detail(tc)
+        # 加载这条顶层评论的所有回复
+        replies = db.query(Comment).filter(
+            Comment.post_id == post_id,
+            Comment.parent_id == tc.id
+        ).order_by(Comment.created_at.asc()).all()
+        tc_dict["replies"] = [build_comment_detail(r) for r in replies]
+        result.append(CommentDetail(**tc_dict))
+
+    return CommentListResponse(total=top_total, items=result)
 
 
 @router.post("/posts/{post_id}/comments", response_model=CommentSchema, summary="发表评论")
@@ -326,32 +350,36 @@ async def create_comment(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """对帖子发表评论"""
-
-    # 检查帖子是否存在
+    """对帖子发表评论，支持回复（parent_id）和图片"""
     post = db.query(Post).filter(Post.id == post_id).first()
-
     if not post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="帖子不存在"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="帖子不存在")
 
-    # 创建评论
+    # 如果是回复，验证父评论存在且属于该帖子
+    if comment_data.parent_id:
+        parent = db.query(Comment).filter(
+            Comment.id == comment_data.parent_id,
+            Comment.post_id == post_id
+        ).first()
+        if not parent:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="被回复评论不存在")
+
     comment = Comment(
         post_id=post_id,
         user_id=current_user.id,
-        content=comment_data.content
+        content=comment_data.content,
+        images=comment_data.images or None,
+        parent_id=comment_data.parent_id or None,
+        reply_to_user_id=comment_data.reply_to_user_id or None
     )
 
     db.add(comment)
-
-    # 更新帖子评论数
-    post.comment_count += 1
+    # 只在顶层评论时更新评论数
+    if not comment_data.parent_id:
+        post.comment_count += 1
 
     db.commit()
     db.refresh(comment)
-
     return comment
 
 
@@ -361,8 +389,7 @@ async def delete_comment(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """删除评论（仅作者可操作）"""
-
+    """删除评论（仅作者可操作），删除顶层评论时关联删除其回复"""
     comment = db.query(Comment).filter(
         Comment.id == comment_id,
         Comment.user_id == current_user.id
@@ -374,14 +401,17 @@ async def delete_comment(
             detail="评论不存在或无权限操作"
         )
 
-    # 更新帖子评论数
     post = db.query(Post).filter(Post.id == comment.post_id).first()
-    if post and post.comment_count > 0:
-        post.comment_count -= 1
+
+    if comment.parent_id is None:
+        # 顶层评论：先删所有回复
+        db.query(Comment).filter(Comment.parent_id == comment_id).delete(synchronize_session=False)
+        if post and post.comment_count > 0:
+            post.comment_count -= 1
+    # 回复本身直接删除，不减 comment_count
 
     db.delete(comment)
     db.commit()
-
     return {"message": "删除成功"}
 
 
