@@ -23,7 +23,10 @@
     "pages/admin/gardens/gardens",
     "pages/admin/orders/orders",
     "pages/admin/stats/stats",
-    "pages/admin/users/users"
+    "pages/admin/users/users",
+    "pages/community/community",
+    "pages/post-detail/post-detail",
+    "pages/publish-post/publish-post"
   ],
   "tabBar": {
     "color": "#7A7E83",

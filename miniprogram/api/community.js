@@ -10,6 +10,18 @@ function getPostList(params = {}) {
   return request({
     url: '/community/posts',
     method: 'GET',
+    data: params,
+    needAuth: false
+  })
+}
+
+/**
+ * 获取我的帖子
+ */
+function getMyPosts(params = {}) {
+  return request({
+    url: '/community/my-posts',
+    method: 'GET',
     data: params
   })
 }
@@ -20,7 +32,8 @@ function getPostList(params = {}) {
 function getPostDetail(id) {
   return request({
     url: `/community/posts/${id}`,
-    method: 'GET'
+    method: 'GET',
+    needAuth: false
   })
 }
 
@@ -72,7 +85,8 @@ function getComments(postId, params = {}) {
   return request({
     url: `/community/posts/${postId}/comments`,
     method: 'GET',
-    data: params
+    data: params,
+    needAuth: false
   })
 }
 
@@ -99,6 +113,7 @@ function deleteComment(postId, commentId) {
 
 module.exports = {
   getPostList,
+  getMyPosts,
   getPostDetail,
   createPost,
   deletePost,

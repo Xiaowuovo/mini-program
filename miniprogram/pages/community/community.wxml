@@ -119,8 +119,8 @@
 
     <!-- 空状态 -->
     <view wx:if="{{!loading && posts.length === 0}}" class="empty-state">
-      <image src="/images/empty.png" class="empty-image"></image>
-      <text>暂无动态</text>
+      <text class="empty-icon">📭</text>
+      <text>暂无动态，快来发第一篇~</text>
     </view>
 
     <!-- 加载更多 -->

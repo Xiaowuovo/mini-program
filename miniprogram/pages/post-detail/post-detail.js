@@ -35,14 +35,19 @@ Page({
     getPostDetail(this.data.postId)
       .then(post => {
         hideLoading()
-        this.setData({
-          post,
-          loading: false
-        })
 
-        wx.setNavigationBarTitle({
-          title: '动态详情'
-        })
+        // 检查是否是作者
+        const userInfo = wx.getStorageSync('userInfo')
+        post.is_author = userInfo && userInfo.id && post.user_id === userInfo.id
+
+        // 格式化时间
+        post.created_at = this._formatTime(post.created_at)
+
+        // 统一点赞字段名
+        post.liked = post.is_liked || false
+
+        this.setData({ post, loading: false })
+        wx.setNavigationBarTitle({ title: post.title || '动态详情' })
       })
       .catch(err => {
         hideLoading()
@@ -50,13 +55,30 @@ Page({
         wx.showModal({
           title: '加载失败',
           content: '无法加载帖子详情',
-          success: (res) => {
-            if (res.confirm) {
-              wx.navigateBack()
-            }
-          }
+          showCancel: false,
+          success: () => wx.navigateBack()
         })
       })
+  },
+
+  /**
+   * 格式化时间
+   */
+  _formatTime(isoStr) {
+    if (!isoStr) return ''
+    const date = new Date(isoStr)
+    const now = new Date()
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    const diffDays = Math.floor(diffHours / 24)
+    if (diffMins < 1) return '刚刚'
+    if (diffMins < 60) return `${diffMins}分钟前`
+    if (diffHours < 24) return `${diffHours}小时前`
+    if (diffDays < 30) return `${diffDays}天前`
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${date.getFullYear()}-${m}-${d}`
   },
 
   /**
@@ -64,7 +86,11 @@ Page({
    */
   loadComments() {
     getComments(this.data.postId)
-      .then(comments => {
+      .then(res => {
+        const comments = (res.items || []).map(c => ({
+          ...c,
+          created_at: this._formatTime(c.created_at)
+        }))
         this.setData({ comments })
       })
       .catch(err => {
@@ -76,23 +102,26 @@ Page({
    * 点赞/取消点赞
    */
   handleLike() {
+    const app = getApp()
+    if (!app.getToken()) {
+      wx.showToast({ title: '请先登录', icon: 'none' })
+      setTimeout(() => app.navigateToLogin(), 1200)
+      return
+    }
+
     const { post } = this.data
     if (!post) return
 
     const action = post.liked ? unlikePost : likePost
-
     action(post.id)
       .then(() => {
         post.liked = !post.liked
-        post.like_count += post.liked ? 1 : -1
+        post.like_count = (post.like_count || 0) + (post.liked ? 1 : -1)
         this.setData({ post })
       })
       .catch(err => {
-        console.error('操作失败:', err)
-        wx.showToast({
-          title: err.message || '操作失败',
-          icon: 'none'
-        })
+        console.error('点赞失败:', err)
+        wx.showToast({ title: err.message || '操作失败', icon: 'none' })
       })
   },
 

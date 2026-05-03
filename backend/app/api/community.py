@@ -20,7 +20,7 @@ from app.schemas.post import (
     CommentDetail,
     CommentListResponse
 )
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_user_optional
 
 router = APIRouter()
 
@@ -31,31 +31,35 @@ router = APIRouter()
 async def get_posts(
     skip: int = Query(0, ge=0, description="跳过数量"),
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
+    sort: str = Query("created_at", description="排序：created_at 或 likes"),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """
-    获取社区帖子列表（公开接口，可不登录访问）
-    按发布时间倒序排列
+    获取社区帖子列表（公开接口，已登录用户可看到点赞状态）
     """
-    current_user = None  # 公开接口，不需要登录
-
-    # 获取总数
     total = db.query(Post).count()
 
-    # 分页查询
-    posts = db.query(Post).order_by(Post.created_at.desc()).offset(skip).limit(limit).all()
+    if sort == "likes":
+        posts = db.query(Post).order_by(
+            Post.like_count.desc(), Post.created_at.desc()
+        ).offset(skip).limit(limit).all()
+    else:
+        posts = db.query(Post).order_by(Post.created_at.desc()).offset(skip).limit(limit).all()
 
-    # 构造详情列表（包含用户信息和点赞状态）
+    user_cache = {}
     post_details = []
     for post in posts:
-        user = db.query(User).filter(User.id == post.user_id).first()
+        if post.user_id not in user_cache:
+            user_cache[post.user_id] = db.query(User).filter(User.id == post.user_id).first()
+        user = user_cache[post.user_id]
 
         post_dict = PostDetail.from_orm(post).dict()
         if user:
             post_dict["user_nickname"] = user.nickname
             post_dict["user_avatar"] = user.avatar
 
-        # 检查当前用户是否点赞
+        post_dict["is_liked"] = False
         if current_user:
             like = db.query(Like).filter(
                 Like.post_id == post.id,
@@ -71,11 +75,10 @@ async def get_posts(
 @router.get("/posts/{post_id}", response_model=PostDetail, summary="获取帖子详情")
 async def get_post(
     post_id: int,
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
-    """获取指定帖子的详细信息（公开接口）"""
-    current_user = None  # 公开接口，不需要登录
-
+    """获取指定帖子的详细信息（公开接口，已登录用户可看点赞状态）"""
     post = db.query(Post).filter(Post.id == post_id).first()
 
     if not post:
@@ -91,7 +94,7 @@ async def get_post(
         post_dict["user_nickname"] = user.nickname
         post_dict["user_avatar"] = user.avatar
 
-    # 检查当前用户是否点赞
+    post_dict["is_liked"] = False
     if current_user:
         like = db.query(Like).filter(
             Like.post_id == post.id,
@@ -280,6 +283,7 @@ async def get_post_comments(
     post_id: int,
     skip: int = Query(0, ge=0, description="跳过数量"),
     limit: int = Query(50, ge=1, le=100, description="每页数量"),
+    _: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """获取指定帖子的评论列表"""

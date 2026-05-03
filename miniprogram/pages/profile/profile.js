@@ -41,6 +41,13 @@ Page({
         title: '任务提醒',
         url: '/pages/reminders/reminders',
         badge: null
+      },
+      {
+        id: 'community',
+        icon: 'https://img.icons8.com/fluency/96/chat.png',
+        title: '社区广场',
+        url: '/pages/community/community',
+        badge: null
       }
     ]
   },
