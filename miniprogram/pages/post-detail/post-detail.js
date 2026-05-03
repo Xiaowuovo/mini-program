@@ -17,7 +17,8 @@ Page({
 
   onLoad(options) {
     const userInfo = wx.getStorageSync('userInfo')
-    this.setData({ currentUserId: userInfo && userInfo.id ? userInfo.id : null })
+    const uid = userInfo && userInfo.id ? parseInt(userInfo.id) : null
+    this.setData({ currentUserId: uid })
 
     if (options.id) {
       this.setData({ postId: parseInt(options.id) })
@@ -39,9 +40,8 @@ Page({
       .then(post => {
         hideLoading()
 
-        // 检查是否是作者
-        const userInfo = wx.getStorageSync('userInfo')
-        post.is_author = userInfo && userInfo.id && post.user_id === userInfo.id
+        // 检查是否是作者（使用已解析的整数 ID 比对）
+        post.is_author = this.data.currentUserId !== null && post.user_id === this.data.currentUserId
 
         // 格式化时间
         post.created_at = this._formatTime(post.created_at)

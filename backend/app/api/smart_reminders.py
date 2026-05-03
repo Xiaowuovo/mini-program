@@ -89,12 +89,13 @@ def generate_smart_reminders(
 def get_reminders(
     status: Optional[str] = Query(None, description="状态筛选：pending/completed/ignored"),
     reminder_type: Optional[str] = Query(None, description="类型筛选"),
-    limit: int = Query(50, ge=1, le=100),
+    garden_id: Optional[int] = Query(None, description="菜地ID筛选"),
+    limit: int = Query(100, ge=1, le=200),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
-    获取提醒列表（含菜地名称）
+    获取提醒列表（含菜地名称），支持菜地筛选
     """
     query = db.query(SmartReminder).filter(
         SmartReminder.user_id == current_user.id
@@ -105,6 +106,9 @@ def get_reminders(
 
     if reminder_type:
         query = query.filter(SmartReminder.reminder_type == reminder_type)
+
+    if garden_id:
+        query = query.filter(SmartReminder.garden_id == garden_id)
 
     reminders = query.order_by(
         SmartReminder.priority.desc(),

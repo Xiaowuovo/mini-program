@@ -3,8 +3,12 @@
   <!-- 顶部横幅 -->
   <view class="header-banner">
     <view class="banner-content">
-      <text class="banner-title">智能任务提醒</text>
-      <text class="banner-desc">科学管理，及时提醒</text>
+      <text class="banner-title">
+        {{fromGarden ? gardenName + ' · 提醒' : '智能任务提醒'}}
+      </text>
+      <text class="banner-desc">
+        {{fromGarden ? '当前菜地的专属提醒' : '科学管理，及时提醒'}}
+      </text>
     </view>
     <view class="banner-toggle">
       <text class="toggle-label">智能提醒</text>
@@ -14,6 +18,34 @@
         color="#4CAF50"
       />
     </view>
+  </view>
+
+  <!-- 全园模式：菜地分类 Tabs -->
+  <view class="garden-tabs-section" wx:if="{{!fromGarden && gardenTabs.length > 0}}">
+    <scroll-view class="garden-tabs-scroll" scroll-x show-scrollbar="{{false}}">
+      <view class="garden-tabs">
+        <!-- 全部菜地 tab -->
+        <view
+          class="garden-tab {{selectedGardenId === null ? 'active' : ''}}"
+          bindtap="onGardenTabChange"
+          data-id="{{null}}"
+        >
+          <text class="garden-tab-name">全部</text>
+          <text class="garden-tab-badge" wx:if="{{statistics.pending > 0}}">{{statistics.pending}}</text>
+        </view>
+        <!-- 各菜地 tab -->
+        <view
+          wx:for="{{gardenTabs}}"
+          wx:key="id"
+          class="garden-tab {{selectedGardenId === item.id ? 'active' : ''}}"
+          bindtap="onGardenTabChange"
+          data-id="{{item.id}}"
+        >
+          <text class="garden-tab-name">{{item.name}}</text>
+          <text class="garden-tab-badge" wx:if="{{item.pending > 0}}">{{item.pending}}</text>
+        </view>
+      </view>
+    </scroll-view>
   </view>
 
   <!-- 统计卡片 -->
@@ -180,12 +212,13 @@
   <view wx:if="{{!loading && reminders.length === 0}}" class="empty-state">
     <text class="empty-icon">📭</text>
     <text class="empty-text">
-      {{statusFilter === 'completed' ? '暂无已完成任务' :
+      {{fromGarden ? '该菜地暂无' + (statusFilter === 'completed' ? '已完成' : statusFilter === 'pending' ? '待处理' : '') + '提醒' :
+        statusFilter === 'completed' ? '暂无已完成任务' :
         statusFilter === 'pending' ? '暂无待处理任务' : '暂无任务提醒'}}
     </text>
     <button class="add-manual-btn" bindtap="addReminder" wx:if="{{statusFilter === 'all' || statusFilter === 'pending'}}">
       <text class="add-icon">+</text>
-      <text>添加提醒</text>
+      <text>{{fromGarden ? '为该菜地添加提醒' : '添加提醒'}}</text>
     </button>
   </view>
 

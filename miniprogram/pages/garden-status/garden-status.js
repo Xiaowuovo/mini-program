@@ -130,11 +130,13 @@ Page({
   },
 
   /**
-   * 跳转到提醒页面
+   * 跳转到提醒页面（带菜地筛选）
    */
   goToReminders() {
+    const { gardenId, garden } = this.data
+    const gardenName = encodeURIComponent(garden && garden.name ? garden.name : '')
     wx.navigateTo({
-      url: '/pages/reminders/reminders'
+      url: `/pages/reminders/reminders?gardenId=${gardenId}&gardenName=${gardenName}`
     })
   },
 
