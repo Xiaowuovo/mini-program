@@ -1,22 +1,30 @@
 // pages/camera/camera.js
-const CAMERA_URL = 'https://124.222.14.2/camera-final-correct.html'
+const app = getApp()
 
 Page({
   data: {
-    cameraUrl: CAMERA_URL,
-    loading: true
+    cameraUrl: '',
+    loading: true,
+    gardenId: null,
+    gardenName: ''
   },
 
-  handleLoad() {
-    this.setData({ loading: false })
-  },
+  onLoad(options) {
+    const { gardenId, gardenName } = options
 
-  handleError(e) {
-    console.error('web-view error', e)
-    this.setData({ loading: false })
-  },
+    // 如果有菜地信息，设置标题
+    if (gardenName) {
+      wx.setNavigationBarTitle({
+        title: `${gardenName} - 视频监控`
+      })
+    }
 
-  handleMessage(e) {
-    console.log('web-view message', e.detail.data)
-  }
-})
+    // 保存菜地ID用于后续可能的功能扩展
+    this.setData({
+      gardenId: gardenId || null,
+      gardenName: gardenName || ''
+    })
+
+
+    // 获取摄像头URL
+    const url = app.globalData.cameraUrl || 'https://124.222.14.2:19302/demos/camera.html';
