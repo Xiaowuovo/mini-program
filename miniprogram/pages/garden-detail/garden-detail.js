@@ -130,9 +130,11 @@ Page({
    * 查看视频监控
    */
   viewVideoMonitor() {
-    // 直接跳转到 WebRTC 摄像头页面
+    const { garden } = this.data
+    const videoUrl = garden && garden.video_stream_url ? encodeURIComponent(garden.video_stream_url) : ''
+    const gardenName = garden && garden.name ? encodeURIComponent(garden.name) : ''
     wx.navigateTo({
-      url: '/pages/camera/camera',
+      url: `/pages/camera/camera?gardenId=${this.data.gardenId}&gardenName=${gardenName}&videoUrl=${videoUrl}`,
       success: () => {
         wx.showToast({
           title: '正在连接摄像头',

@@ -1,243 +1,233 @@
 <!--pages/services/services.wxml-->
 <view class="container services-page">
-  <!-- 服务统计 -->
-  <view class="stats-row">
-    <view class="stat-item">
-      <text class="stat-value">{{stats.totalServices}}</text>
-      <text class="stat-label">服务种类</text>
-    </view>
-    <view class="stat-divider"></view>
-    <view class="stat-item">
-      <text class="stat-value">{{stats.totalOrders}}</text>
-      <text class="stat-label">服务订单</text>
-    </view>
-    <view class="stat-divider"></view>
-    <view class="stat-item">
-      <text class="stat-value">{{stats.satisfaction}}%</text>
-      <text class="stat-label">满意度</text>
-    </view>
-  </view>
 
-  <!-- 搜索栏 -->
-  <view class="search-section">
-    <view class="search-bar">
-      <view class="search-icon">🔍</view>
-      <input
-        class="search-input"
-        placeholder="搜索服务名称或描述"
-        value="{{searchKeyword}}"
-        bindinput="onSearchInput"
-      />
-      <view wx:if="{{searchKeyword}}" class="clear-icon" bindtap="clearSearch">✕</view>
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-content">
+      <text class="banner-title">🌿 增值服务</text>
+      <text class="banner-desc">专业团队上门，让种菜更省心</text>
     </view>
-    <view class="sort-btn" bindtap="toggleSortMenu">
-      <text class="sort-icon">⇅</text>
-      <text class="sort-text">排序</text>
-    </view>
-  </view>
-
-  <!-- 排序菜单 -->
-  <view wx:if="{{showSortMenu}}" class="sort-menu-mask" bindtap="toggleSortMenu">
-    <view class="sort-menu" catchtap="stopPropagation">
-      <view class="sort-header">
-        <text class="sort-title">选择排序方式</text>
-        <view class="close-btn" bindtap="toggleSortMenu">✕</view>
+    <view class="banner-stats">
+      <view class="bstat">
+        <text class="bstat-val">{{catalog.length}}</text>
+        <text class="bstat-lab">服务类型</text>
       </view>
-      <view class="sort-options">
-        <view
-          class="sort-option {{sortType === 'default' ? 'active' : ''}}"
-          bindtap="selectSort"
-          data-type="default"
-        >
-          <text>默认排序</text>
-          <text wx:if="{{sortType === 'default'}}" class="check-icon">✓</text>
-        </view>
-        <view
-          class="sort-option {{sortType === 'price_asc' ? 'active' : ''}}"
-          bindtap="selectSort"
-          data-type="price_asc"
-        >
-          <text>价格从低到高</text>
-          <text wx:if="{{sortType === 'price_asc'}}" class="check-icon">✓</text>
-        </view>
-        <view
-          class="sort-option {{sortType === 'price_desc' ? 'active' : ''}}"
-          bindtap="selectSort"
-          data-type="price_desc"
-        >
-          <text>价格从高到低</text>
-          <text wx:if="{{sortType === 'price_desc'}}" class="check-icon">✓</text>
-        </view>
-        <view
-          class="sort-option {{sortType === 'popular' ? 'active' : ''}}"
-          bindtap="selectSort"
-          data-type="popular"
-        >
-          <text>热门优先</text>
-          <text wx:if="{{sortType === 'popular'}}" class="check-icon">✓</text>
-        </view>
+      <view class="bstat-divider"></view>
+      <view class="bstat">
+        <text class="bstat-val">{{stats.totalOrders}}</text>
+        <text class="bstat-lab">累计预约</text>
+      </view>
+      <view class="bstat-divider"></view>
+      <view class="bstat">
+        <text class="bstat-val">{{stats.pendingOrders}}</text>
+        <text class="bstat-lab">进行中</text>
       </view>
     </view>
   </view>
 
-  <!-- 分类标签 -->
-  <view class="category-section">
-    <scroll-view class="tabs-scroll" scroll-x show-scrollbar="{{false}}">
-      <view class="tabs-wrapper">
-        <view
-          wx:for="{{categories}}"
-          wx:key="id"
-          class="tab-item {{currentCategory === item.id ? 'active' : ''}}"
-          bindtap="onCategoryChange"
-          data-category="{{item.id}}"
-        >
-          <text class="tab-icon">{{item.icon}}</text>
-          <text class="tab-name">{{item.name}}</text>
-        </view>
-      </view>
-    </scroll-view>
-  </view>
-
-  <!-- 结果统计 -->
-  <view wx:if="{{!loading && filteredServices.length > 0}}" class="result-count">
-    <text class="count-text">找到 {{filteredServices.length}} 个服务</text>
-  </view>
-
-  <!-- 服务列表 -->
-  <view class="service-list">
+  <!-- 主 Tab -->
+  <view class="main-tabs">
     <view
-      wx:for="{{filteredServices}}"
-      wx:key="id"
-      class="service-card"
-      bindtap="viewServiceDetail"
-      data-id="{{item.id}}"
+      class="main-tab {{activeTab === 'catalog' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="catalog"
+    >服务目录</view>
+    <view
+      class="main-tab {{activeTab === 'myorders' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="myorders"
     >
-      <!-- 服务头部 -->
-      <view class="service-header">
-        <view class="service-icon-wrapper">
-          <text class="service-icon">{{item.icon}}</text>
-        </view>
-        <view class="service-info">
-          <view class="service-name-row">
-            <text class="service-name">{{item.name}}</text>
-            <view wx:if="{{item.isPopular}}" class="popular-badge">热门</view>
+      我的预约
+      <text wx:if="{{stats.pendingOrders > 0}}" class="tab-badge">{{stats.pendingOrders}}</text>
+    </view>
+  </view>
+
+  <!-- ===== 服务目录 ===== -->
+  <view wx:if="{{activeTab === 'catalog'}}">
+    <view class="service-list">
+      <view
+        wx:for="{{catalog}}"
+        wx:key="type"
+        class="service-card"
+      >
+        <view class="service-header">
+          <view class="service-icon-wrapper">
+            <text class="service-icon">{{item.icon}}</text>
           </view>
-          <text class="service-desc">{{item.description}}</text>
-          <view class="service-meta">
-            <view class="rating-box">
-              <text class="star-icon">⭐</text>
-              <text class="rating-text">{{item.rating || '5.0'}}</text>
+          <view class="service-info">
+            <view class="service-name-row">
+              <text class="service-name">{{item.name}}</text>
             </view>
-            <text class="order-count">已售 {{item.orderCount || 0}}</text>
+            <text class="service-desc">{{item.desc}}</text>
+            <view class="service-meta">
+              <text class="meta-tag">⏱ {{item.duration}}</text>
+              <text class="meta-tag">👷 专业团队</text>
+            </view>
           </view>
         </view>
-        <view class="favorite-btn" catchtap="toggleFavorite" data-id="{{item.id}}">
-          <text class="favorite-icon {{item.isFavorite ? 'active' : ''}}">{{item.isFavorite ? '❤️' : '🤍'}}</text>
+
+        <view class="features-list">
+          <view
+            wx:for="{{item.features}}"
+            wx:key="index"
+            wx:for-item="feat"
+            class="feature-tag"
+          >
+            <text class="feature-icon">✓</text>
+            <text>{{feat}}</text>
+          </view>
+        </view>
+
+        <view class="service-footer">
+          <view class="service-price">
+            <text class="price-symbol">¥</text>
+            <text class="price-number">{{item.price}}</text>
+            <text class="price-unit">/{{item.unit}}</text>
+          </view>
+          <button
+            class="book-btn"
+            catchtap="openBookingModal"
+            data-type="{{item.type}}"
+          >立即预约</button>
         </view>
       </view>
+    </view>
 
-      <!-- 特色标签 -->
-      <view class="features-list" wx:if="{{item.features && item.features.length > 0}}">
-        <view wx:for="{{item.features}}" wx:key="index" wx:for-item="feature" class="feature-tag">
-          <text class="feature-icon">✓</text>
-          <text>{{feature}}</text>
+    <!-- 服务说明 -->
+    <view class="tips-section">
+      <view class="tips-header">
+        <text class="tips-icon">💡</text>
+        <text class="tips-title">服务说明</text>
+      </view>
+      <view class="tips-content">
+        <view class="tip-item"><text class="tip-dot">•</text><text class="tip-text">所有服务由经验丰富的专业人员提供</text></view>
+        <view class="tip-item"><text class="tip-dot">•</text><text class="tip-text">需有进行中的菜地租用订单才可预约</text></view>
+        <view class="tip-item"><text class="tip-dot">•</text><text class="tip-text">预约成功后工作人员将尽快与您联系</text></view>
+        <view class="tip-item"><text class="tip-dot">•</text><text class="tip-text">如有问题请联系客服：400-123-4567</text></view>
+      </view>
+    </view>
+
+    <!-- 联系客服 -->
+    <view class="contact-bar" bindtap="contactService">
+      <text class="contact-icon">📞</text>
+      <text class="contact-text">联系客服 400-123-4567</text>
+    </view>
+  </view>
+
+  <!-- ===== 我的预约 ===== -->
+  <view wx:if="{{activeTab === 'myorders'}}">
+    <!-- 状态筛选 -->
+    <view class="my-order-tabs">
+      <view class="mo-tab {{myOrdersTab === 'pending' ? 'active' : ''}}" bindtap="switchMyOrdersTab" data-status="pending">待处理</view>
+      <view class="mo-tab {{myOrdersTab === 'processing' ? 'active' : ''}}" bindtap="switchMyOrdersTab" data-status="processing">处理中</view>
+      <view class="mo-tab {{myOrdersTab === 'completed' ? 'active' : ''}}" bindtap="switchMyOrdersTab" data-status="completed">已完成</view>
+      <view class="mo-tab {{myOrdersTab === 'cancelled' ? 'active' : ''}}" bindtap="switchMyOrdersTab" data-status="cancelled">已取消</view>
+    </view>
+
+    <!-- 加载中 -->
+    <view wx:if="{{myOrdersLoading}}" class="loading-state">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 订单列表 -->
+    <view wx:elif="{{myOrders.length > 0}}" class="my-orders-list">
+      <view
+        wx:for="{{myOrders}}"
+        wx:key="id"
+        wx:if="{{item.status === myOrdersTab}}"
+        class="my-order-card"
+      >
+        <view class="mo-card-header">
+          <view class="mo-type-badge">
+            <text class="mo-type-icon">
+              {{item.service_type === '代浇水' ? '💧' : item.service_type === '代施肥' ? '🌿' : item.service_type === '代除草' ? '🌾' : item.service_type === '代除虫' ? '🐛' : '�'}}
+            </text>
+            <text class="mo-type-name">{{item.service_type}}</text>
+          </view>
+          <view class="mo-status mo-status-{{item.status}}">{{item.statusText}}</view>
+        </view>
+
+        <view class="mo-card-body">
+          <view class="mo-info-row">
+            <text class="mo-label">关联菜地</text>
+            <text class="mo-value">{{item.garden_name || '未关联菜地'}}</text>
+          </view>
+          <view class="mo-info-row">
+            <text class="mo-label">服务费用</text>
+            <text class="mo-value mo-price">¥{{item.priceNum}}</text>
+          </view>
+          <view class="mo-info-row">
+            <text class="mo-label">预约时间</text>
+            <text class="mo-value">{{item.createdAtFmt}}</text>
+          </view>
+          <view class="mo-info-row" wx:if="{{item.notes}}">
+            <text class="mo-label">备注</text>
+            <text class="mo-value">{{item.notes}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{item.status === 'pending'}}" class="mo-card-footer">
+          <view class="mo-cancel-btn" catchtap="cancelMyOrder" data-id="{{item.id}}">取消预约</view>
         </view>
       </view>
+    </view>
 
-      <!-- 服务详情 -->
-      <view class="service-details">
-        <view class="detail-item">
-          <text class="detail-label">服务时长</text>
-          <text class="detail-value">{{item.duration || '30分钟'}}</text>
-        </view>
-        <view class="detail-item">
-          <text class="detail-label">服务人员</text>
-          <text class="detail-value">专业团队</text>
-        </view>
+    <!-- 空状态 -->
+    <view wx:elif="{{!myOrdersLoading}}" class="empty-state">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无{{myOrdersTab === 'pending' ? '待处理' : myOrdersTab === 'processing' ? '处理中' : myOrdersTab === 'completed' ? '已完成' : '已取消'}}服务</text>
+      <view class="empty-btn" bindtap="switchTab" data-tab="catalog">去预约服务</view>
+    </view>
+  </view>
+
+  <!-- 预约弹窗 -->
+  <view wx:if="{{showBookingModal}}" class="modal-mask" bindtap="closeBookingModal">
+    <view class="modal-body" catchtap="noop">
+      <view class="modal-header">
+        <text class="modal-title">预约 {{bookingService.icon}} {{bookingService.name}}</text>
+        <text class="modal-close" bindtap="closeBookingModal">✕</text>
       </view>
 
-      <!-- 底部操作 -->
-      <view class="service-footer">
-        <view class="service-price">
-          <text class="price-symbol">¥</text>
-          <text class="price-number">{{item.price}}</text>
-          <text class="price-unit">/{{item.unit}}</text>
-        </view>
-        <button
-          class="book-btn"
-          bindtap="bookService"
-          data-id="{{item.id}}"
-          catch:tap="bookService"
+      <view class="modal-price-row">
+        <text class="modal-price-label">服务费用</text>
+        <text class="modal-price-val">¥{{bookingService.price}}/{{bookingService.unit}}</text>
+      </view>
+
+      <view class="modal-field">
+        <text class="modal-field-label">选择菜地</text>
+        <picker
+          bindchange="onGardenSelect"
+          value="{{selectedGardenIndex}}"
+          range="{{activeGardens}}"
+          range-key="label"
         >
-          立即预约
-        </button>
+          <view class="modal-picker">
+            <text class="modal-picker-text">
+              {{activeGardens[selectedGardenIndex] ? activeGardens[selectedGardenIndex].label : '请选择菜地'}}
+            </text>
+            <text class="modal-picker-arrow">›</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="modal-field">
+        <text class="modal-field-label">备注（可选）</text>
+        <textarea
+          class="modal-textarea"
+          placeholder="请输入特殊要求或说明..."
+          value="{{bookingNote}}"
+          bindinput="onNoteInput"
+          maxlength="200"
+        ></textarea>
+      </view>
+
+      <view class="modal-actions">
+        <view class="modal-btn-cancel" bindtap="closeBookingModal">取消</view>
+        <view class="modal-btn-confirm" bindtap="confirmBooking">确认预约</view>
       </view>
     </view>
   </view>
 
-  <!-- 加载状态 -->
-  <view wx:if="{{loading}}" class="loading-state">
-    <view class="loading-spinner"></view>
-    <text class="loading-text">加载中...</text>
-  </view>
-
-  <!-- 空状态 -->
-  <view wx:if="{{!loading && filteredServices.length === 0}}" class="empty-state">
-    <text class="empty-icon">🌱</text>
-    <text class="empty-text">{{searchKeyword ? '没有找到相关服务' : '暂无服务'}}</text>
-    <text class="empty-hint">{{searchKeyword ? '试试其他关键词' : '点击下方按钮刷新'}}</text>
-    <button class="refresh-btn" bindtap="loadServices">
-      <text class="refresh-icon">🔄</text>
-      <text>刷新数据</text>
-    </button>
-  </view>
-
-  <!-- 快捷入口 -->
-  <view wx:if="{{!loading && filteredServices.length > 0}}" class="quick-actions">
-    <view class="action-item" bindtap="viewAllOrders">
-      <view class="action-icon-wrapper action-green">
-        <text class="action-icon">📋</text>
-      </view>
-      <text class="action-text">我的订单</text>
-    </view>
-    <view class="action-item" bindtap="contactService">
-      <view class="action-icon-wrapper action-blue">
-        <text class="action-icon">💬</text>
-      </view>
-      <text class="action-text">联系客服</text>
-    </view>
-  </view>
-
-  <!-- 服务说明 -->
-  <view class="tips-section">
-    <view class="tips-header">
-      <text class="tips-icon">💡</text>
-      <text class="tips-title">服务说明</text>
-    </view>
-    <view class="tips-content">
-      <view class="tip-item">
-        <text class="tip-dot">•</text>
-        <text class="tip-text">所有服务由经验丰富的专业人员提供</text>
-      </view>
-      <view class="tip-item">
-        <text class="tip-dot">•</text>
-        <text class="tip-text">服务时间灵活，可根据您的需求预约</text>
-      </view>
-      <view class="tip-item">
-        <text class="tip-dot">•</text>
-        <text class="tip-text">支持在线支付和现场支付两种方式</text>
-      </view>
-      <view class="tip-item">
-        <text class="tip-dot">•</text>
-        <text class="tip-text">服务完成后可进行评价，帮助我们改进</text>
-      </view>
-      <view class="tip-item">
-        <text class="tip-dot">•</text>
-        <text class="tip-text">如有问题请联系客服：400-123-4567</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 底部安全区 -->
   <view class="safe-bottom"></view>
 </view>

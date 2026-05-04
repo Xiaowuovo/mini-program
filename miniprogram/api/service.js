@@ -4,43 +4,21 @@
 const { request } = require('../utils/request.js')
 
 /**
- * 获取服务列表
+ * 获取服务价格配置（无需登录）
  */
-function getServiceList(params = {}) {
+function getServicePrices() {
   return request({
-    url: '/services',
-    method: 'GET',
-    data: params
-  })
-}
-
-/**
- * 获取服务详情
- */
-function getServiceDetail(id) {
-  return request({
-    url: `/services/${id}`,
+    url: '/services/prices',
     method: 'GET'
   })
 }
 
 /**
- * 预约服务
+ * 获取我的服务订单列表
  */
-function bookService(data) {
+function getMyServiceOrders(params = {}) {
   return request({
-    url: '/service-orders',
-    method: 'POST',
-    data
-  })
-}
-
-/**
- * 获取服务订单列表
- */
-function getServiceOrders(params = {}) {
-  return request({
-    url: '/service-orders',
+    url: '/services',
     method: 'GET',
     data: params
   })
@@ -51,8 +29,19 @@ function getServiceOrders(params = {}) {
  */
 function getServiceOrderDetail(id) {
   return request({
-    url: `/service-orders/${id}`,
+    url: `/services/${id}`,
     method: 'GET'
+  })
+}
+
+/**
+ * 预约服务（需要 order_id + service_type）
+ */
+function bookService(data) {
+  return request({
+    url: '/services',
+    method: 'POST',
+    data
   })
 }
 
@@ -61,28 +50,15 @@ function getServiceOrderDetail(id) {
  */
 function cancelServiceOrder(id) {
   return request({
-    url: `/service-orders/${id}/cancel`,
+    url: `/services/${id}/cancel`,
     method: 'PUT'
   })
 }
 
-/**
- * 完成服务订单
- */
-function completeServiceOrder(id, data) {
-  return request({
-    url: `/service-orders/${id}/complete`,
-    method: 'PUT',
-    data
-  })
-}
-
 module.exports = {
-  getServiceList,
-  getServiceDetail,
-  bookService,
-  getServiceOrders,
+  getServicePrices,
+  getMyServiceOrders,
   getServiceOrderDetail,
-  cancelServiceOrder,
-  completeServiceOrder
+  bookService,
+  cancelServiceOrder
 }

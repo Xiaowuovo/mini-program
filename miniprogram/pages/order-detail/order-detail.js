@@ -8,10 +8,10 @@ Page({
     order: null,
     loading: true,
     statusSteps: [
-      { key: 'pending', label: '待支付', icon: '⏰' },
-      { key: 'paid', label: '已支付', icon: '✓' },
-      { key: 'active', label: '进行中', icon: '🌱' },
-      { key: 'completed', label: '已完成', icon: '🎉' }
+      { key: 'pending', label: '待支付' },
+      { key: 'paid', label: '已支付' },
+      { key: 'active', label: '进行中' },
+      { key: 'completed', label: '已完成' }
     ]
   },
 
@@ -55,6 +55,16 @@ Page({
         const createdAt = this.formatDateTime(order.created_at)
         const paymentDeadline = this.calculatePaymentDeadline(order.created_at)
 
+        // 添加步骤条 active 标记
+        const statusOrder = ['pending', 'paid', 'active', 'completed']
+        const currentIndex = statusOrder.indexOf(order.status)
+        const statusSteps = [
+          { key: 'pending', label: '待支付', active: 0 <= currentIndex },
+          { key: 'paid',    label: '已支付', active: 1 <= currentIndex },
+          { key: 'active',  label: '进行中', active: 2 <= currentIndex },
+          { key: 'completed', label: '已完成', active: 3 <= currentIndex }
+        ]
+
         this.setData({
           order: {
             ...order,
@@ -62,6 +72,7 @@ Page({
             created_at_formatted: createdAt,
             payment_deadline: paymentDeadline
           },
+          statusSteps,
           loading: false
         })
 

@@ -1,4 +1,115 @@
 /* pages/orders/orders.wxss */
+
+/* 倒计时横幅 */
+.countdown-bar {
+  display: flex;
+  align-items: center;
+  background: #FFF8E1;
+  padding: 14rpx 30rpx;
+  gap: 10rpx;
+  border-bottom: 1rpx solid #FFE082;
+}
+.countdown-bar.expired {
+  background: #FFEBEE;
+  border-bottom-color: #FFCDD2;
+}
+.countdown-icon { font-size: 26rpx; }
+.countdown-text { font-size: 24rpx; color: #FF6F00; }
+.countdown-bar.expired .countdown-text { color: #D32F2F; }
+
+/* 菜地标签 */
+.garden-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin: 8rpx 0;
+}
+.garden-tag {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+}
+.area-tag {
+  background: #E8F5E9;
+  color: #4CAF50;
+}
+.days-tag {
+  background: #E3F2FD;
+  color: #1976D2;
+}
+.days-tag.urgent {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+/* 菜地租期 */
+.garden-period {
+  font-size: 22rpx;
+  color: #aaa;
+  margin-top: 4rpx;
+}
+
+/* 价格行 */
+.price-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 30rpx 16rpx;
+  gap: 12rpx;
+}
+.price-label {
+  font-size: 24rpx;
+  color: #999;
+}
+.price-value {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #FF6B6B;
+}
+
+/* 骨架屏 */
+.skeleton-list { padding: 20rpx; }
+.skeleton-card {
+  background: #FFF;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+}
+.skeleton-header {
+  height: 70rpx;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+.skeleton-body {
+  height: 160rpx;
+  background: linear-gradient(90deg, #f5f5f5 25%, #ebebeb 50%, #f5f5f5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  margin: 16rpx;
+  border-radius: 8rpx;
+}
+.skeleton-footer {
+  height: 80rpx;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 空状态 */
+.empty-icon { font-size: 100rpx; opacity: 0.4; margin-bottom: 20rpx; }
+
+/* 列表底部 */
+.list-footer {
+  text-align: center;
+  padding: 30rpx;
+  font-size: 24rpx;
+  color: #bbb;
+}
 .orders-page {
   background-color: #f5f5f5;
   min-height: 100vh;

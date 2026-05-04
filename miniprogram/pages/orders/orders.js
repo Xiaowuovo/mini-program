@@ -30,19 +30,22 @@ Page({
   },
 
   onLoad(options) {
-    // 从其他页面传入的状态筛选
     if (options.status) {
       this.setData({ currentStatus: options.status })
     }
-    this.loadOrders()
   },
 
   onShow() {
-    // 页面显示时刷新列表（可能从详情页返回）
-    if (this.data.orders.length > 0) {
-      this.setData({ page: 1, orders: [] })
-      this.loadOrders()
-    }
+    this.setData({ page: 1, orders: [], hasMore: true })
+    this.loadOrders()
+  },
+
+  onUnload() {
+    if (this._countdownTimer) clearInterval(this._countdownTimer)
+  },
+
+  onHide() {
+    if (this._countdownTimer) clearInterval(this._countdownTimer)
   },
 
   onPullDownRefresh() {
@@ -96,7 +99,7 @@ Page({
           hasMore: orders.length < res.total,
           loading: false
         })
-
+        this.startCountdownTimer()
         callback && callback()
       })
       .catch(err => {
@@ -114,10 +117,8 @@ Page({
    * 格式化订单数据
    */
   formatOrder(order) {
-    // 格式化订单编号
     const orderNo = String(order.id).padStart(10, '0')
 
-    // 状态文本
     const statusMap = {
       'pending': '待支付',
       'paid': '已支付',
@@ -126,22 +127,78 @@ Page({
       'cancelled': '已取消'
     }
 
-    // 获取菜地图片
     let garden_image = '/images/default-garden.png'
     if (order.garden && order.garden.images && order.garden.images.length > 0) {
       garden_image = order.garden.images[0]
     }
 
-    // 获取菜地面积
     const garden_area = order.garden ? order.garden.area : 0
+
+    // 剩余天数（进行中订单）
+    let daysRemaining = null
+    let daysRemainingText = ''
+    if (order.status === 'active' && order.end_date) {
+      const end = new Date(order.end_date)
+      const now = new Date()
+      daysRemaining = Math.ceil((end - now) / (1000 * 60 * 60 * 24))
+      daysRemainingText = daysRemaining > 0 ? `剩${daysRemaining}天` : '已到期'
+    }
+
+    // 待支付倒计时（创建后15分钟内支付）
+    let payCountdown = ''
+    let payExpired = false
+    if (order.status === 'pending' && order.created_at) {
+      const deadline = new Date(new Date(order.created_at).getTime() + 30 * 60 * 1000)
+      const diff = Math.max(0, deadline - new Date())
+      if (diff === 0) {
+        payExpired = true
+        payCountdown = '已超时'
+      } else {
+        const m = Math.floor(diff / 60000)
+        const s = Math.floor((diff % 60000) / 1000)
+        payCountdown = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+      }
+    }
 
     return {
       ...order,
-      orderNo: orderNo,
+      orderNo,
       statusText: statusMap[order.status] || '未知',
-      garden_image: garden_image,
-      garden_area: garden_area
+      garden_image,
+      garden_area,
+      daysRemaining,
+      daysRemainingText,
+      payCountdown,
+      payExpired
     }
+  },
+
+  /**
+   * 启动待支付订单倒计时
+   */
+  startCountdownTimer() {
+    if (this._countdownTimer) clearInterval(this._countdownTimer)
+    const hasPending = this.data.orders.some(o => o.status === 'pending')
+    if (!hasPending) return
+
+    this._countdownTimer = setInterval(() => {
+      const orders = this.data.orders.map(order => {
+        if (order.status !== 'pending' || !order.created_at) return order
+        const deadline = new Date(new Date(order.created_at).getTime() + 30 * 60 * 1000)
+        const diff = Math.max(0, deadline - new Date())
+        const payExpired = diff === 0
+        let payCountdown
+        if (payExpired) {
+          payCountdown = '已超时'
+        } else {
+          const m = Math.floor(diff / 60000)
+          const s = Math.floor((diff % 60000) / 1000)
+          payCountdown = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+        }
+        return { ...order, payCountdown, payExpired }
+      })
+      this.setData({ orders })
+    }, 1000)
   },
 
   /**

@@ -1,4 +1,23 @@
 /* pages/order-detail/order-detail.wxss */
+
+/* 取消提示横幅 */
+.cancelled-note {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 14rpx 30rpx;
+  border-radius: 8rpx;
+  margin: 0 0 20rpx;
+}
+.cancelled-note-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 客服emoji图标 */
+.bar-emoji {
+  font-size: 40rpx;
+  margin-bottom: 4rpx;
+}
+
 .order-detail-page {
   background-color: #f5f5f5;
   min-height: 100vh;

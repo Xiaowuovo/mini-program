@@ -2,7 +2,7 @@
 <view class="container orders-page">
   <!-- 状态标签栏 -->
   <view class="status-tabs">
-    <scroll-view class="tabs-scroll" scroll-x>
+    <scroll-view class="tabs-scroll" scroll-x show-scrollbar="{{false}}">
       <view class="tabs-wrapper">
         <view
           wx:for="{{statusTabs}}"
@@ -28,89 +28,90 @@
     >
       <!-- 订单头部 -->
       <view class="order-header">
-        <text class="order-no">订单号：{{item.orderNo || item.id}}</text>
+        <text class="order-no">订单号：{{item.orderNo}}</text>
         <view class="order-status status-{{item.status}}">
           {{item.statusText}}
         </view>
       </view>
 
+      <!-- 待支付倒计时横幅 -->
+      <view wx:if="{{item.status === 'pending' && item.payCountdown}}" class="countdown-bar {{item.payExpired ? 'expired' : ''}}">
+        <text class="countdown-icon">⏰</text>
+        <text class="countdown-text">{{item.payExpired ? '支付已超时，请重新下单' : '请在 ' + item.payCountdown + ' 内完成支付'}}</text>
+      </view>
+
       <!-- 菜地信息 -->
       <view class="garden-info">
         <image
-          src="{{item.garden_image}}"
+          src="{{item.garden_image || '/images/default-garden.png'}}"
           class="garden-image"
           mode="aspectFill"
+          lazy-load
         ></image>
         <view class="garden-detail">
-          <text class="garden-name">{{item.garden_name || '菜地信息'}}</text>
-          <text class="garden-spec">{{item.garden_area}}㎡</text>
+          <text class="garden-name">{{item.garden_name || '菜地'}}</text>
+          <view class="garden-tags">
+            <text class="garden-tag area-tag">{{item.garden_area}}㎡</text>
+            <text wx:if="{{item.status === 'active' && item.daysRemainingText}}" class="garden-tag days-tag {{item.daysRemaining <= 7 ? 'urgent' : ''}}">{{item.daysRemainingText}}</text>
+          </view>
+          <text class="garden-period">{{item.start_date}} 至 {{item.end_date}}</text>
         </view>
       </view>
 
-      <!-- 租期信息 -->
-      <view class="order-info">
-        <view class="info-row">
-          <text class="info-label">租用时间</text>
-          <text class="info-value">{{item.start_date}} 至 {{item.end_date}}</text>
-        </view>
-        <view class="info-row">
-          <text class="info-label">订单金额</text>
-          <text class="info-value price">¥{{item.total_price}}</text>
-        </view>
+      <!-- 价格行 -->
+      <view class="price-row">
+        <text class="price-label">实付款</text>
+        <text class="price-value">¥{{item.total_price}}</text>
       </view>
 
       <!-- 操作按钮 -->
       <view class="order-actions">
-        <!-- 待支付状态 -->
+        <!-- 待支付 -->
         <block wx:if="{{item.status === 'pending'}}">
-          <view class="action-btn secondary" catchtap="cancelOrder" data-id="{{item.id}}">
-            取消订单
-          </view>
-          <view class="action-btn primary" catchtap="payOrder" data-id="{{item.id}}">
-            立即支付
-          </view>
+          <view class="action-btn secondary" catchtap="cancelOrder" data-id="{{item.id}}">取消</view>
+          <view class="action-btn primary" catchtap="payOrder" data-id="{{item.id}}">立即支付</view>
         </block>
 
-        <!-- 进行中状态 -->
+        <!-- 进行中 -->
         <block wx:elif="{{item.status === 'active'}}">
-          <view class="action-btn secondary" catchtap="viewGarden" data-gardenid="{{item.garden_id}}">
-            查看菜地
-          </view>
-          <view class="action-btn primary" catchtap="navigateToDetail" data-id="{{item.id}}">
-            订单详情
-          </view>
+          <view class="action-btn secondary" catchtap="viewGarden" data-gardenid="{{item.garden_id}}">管理菜地</view>
+          <view class="action-btn primary" catchtap="navigateToDetail" data-id="{{item.id}}">订单详情</view>
         </block>
 
-        <!-- 其他状态 -->
+        <!-- 已支付（等待开始） -->
+        <block wx:elif="{{item.status === 'paid'}}">
+          <view class="action-btn primary" catchtap="navigateToDetail" data-id="{{item.id}}">查看详情</view>
+        </block>
+
+        <!-- 其他 -->
         <block wx:else>
-          <view class="action-btn secondary" catchtap="navigateToDetail" data-id="{{item.id}}">
-            订单详情
-          </view>
+          <view class="action-btn secondary" catchtap="navigateToDetail" data-id="{{item.id}}">订单详情</view>
         </block>
       </view>
     </view>
   </view>
 
-  <!-- 加载状态 -->
-  <view wx:if="{{loading}}" class="loading-state">
-    <text>加载中...</text>
+  <!-- 加载骨架 -->
+  <view wx:if="{{loading}}" class="skeleton-list">
+    <view class="skeleton-card" wx:for="{{[1,2,3]}}" wx:key="*this">
+      <view class="skeleton-header"></view>
+      <view class="skeleton-body"></view>
+      <view class="skeleton-footer"></view>
+    </view>
   </view>
 
   <!-- 空状态 -->
   <view wx:if="{{!loading && orders.length === 0}}" class="empty-state">
-    <image src="/images/empty.png" class="empty-image"></image>
-    <text class="empty-text">暂无订单</text>
-    <navigator url="/pages/gardens/gardens" class="go-rent-btn">
-      去租菜地
-    </navigator>
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">{{currentStatus ? '该状态下暂无订单' : '暂无订单'}}</text>
+    <navigator url="/pages/gardens/gardens" class="go-rent-btn">去租菜地</navigator>
   </view>
 
-  <!-- 加载更多 -->
-  <view wx:if="{{hasMore && !loading && orders.length > 0}}" class="load-more">
-    <text>加载更多...</text>
+  <!-- 加载更多 / 没有更多 -->
+  <view wx:if="{{hasMore && !loading && orders.length > 0}}" class="list-footer">
+    <text>上滑加载更多</text>
   </view>
-
-  <view wx:if="{{!hasMore && orders.length > 0}}" class="no-more">
-    <text>没有更多了</text>
+  <view wx:if="{{!hasMore && orders.length > 0}}" class="list-footer">
+    <text>— 已全部加载 —</text>
   </view>
 </view>
