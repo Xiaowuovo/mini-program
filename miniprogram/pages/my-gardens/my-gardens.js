@@ -190,10 +190,9 @@ Page({
    * 查看视频监控
    */
   viewMonitor(e) {
-    const { id, name, url } = e.currentTarget.dataset
-    const videoParam = url ? `&videoUrl=${encodeURIComponent(url)}` : ''
+    const { id, name } = e.currentTarget.dataset
     wx.navigateTo({
-      url: `/pages/camera/camera?gardenId=${id}&gardenName=${encodeURIComponent(name)}${videoParam}`
+      url: `/pages/camera/camera?gardenId=${id}&gardenName=${name}`
     })
   }
 })

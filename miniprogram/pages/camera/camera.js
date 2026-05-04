@@ -10,12 +10,12 @@ Page({
   },
 
   onLoad(options) {
-    const { gardenId, gardenName, videoUrl } = options
+    const { gardenId, gardenName } = options
 
     // 如果有菜地信息，设置标题
     if (gardenName) {
       wx.setNavigationBarTitle({
-        title: `${decodeURIComponent(gardenName)} - 视频监控`
+        title: `${gardenName} - 视频监控`
       })
     }
 
@@ -25,8 +25,8 @@ Page({
       gardenName: gardenName || ''
     })
 
-    // 优先用跳转参数携带的 URL，其次用全局配置
-    const url = (videoUrl ? decodeURIComponent(videoUrl) : '') || app.globalData.cameraUrl || ''
+    // 获取摄像头URL（优先从全局数据获取，未配置则提示）
+    const url = app.globalData.cameraUrl || ''
     if (!url) {
       this.setData({ loading: false })
       wx.showModal({

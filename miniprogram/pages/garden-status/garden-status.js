@@ -144,11 +144,9 @@ Page({
    * 跳转到视频监控
    */
   goToMonitor() {
-    const { garden, gardenId } = this.data
-    const videoUrl = garden && garden.video_stream_url ? encodeURIComponent(garden.video_stream_url) : ''
-    const gardenName = garden && garden.name ? encodeURIComponent(garden.name) : ''
+    // 直接跳转到摄像头页面（和garden-detail一致）
     wx.navigateTo({
-      url: `/pages/camera/camera?gardenId=${gardenId}&gardenName=${gardenName}&videoUrl=${videoUrl}`,
+      url: '/pages/camera/camera',
       success: () => {
         wx.showToast({
           title: '正在连接摄像头',
