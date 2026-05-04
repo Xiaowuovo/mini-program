@@ -15,13 +15,6 @@ Page({
     },
     menuList: [
       {
-        id: 'orders',
-        icon: 'https://img.icons8.com/fluency/96/purchase-order.png',
-        title: '我的订单',
-        url: '/pages/orders/orders',
-        badge: null
-      },
-      {
         id: 'gardens',
         icon: 'https://img.icons8.com/fluency/96/garden.png',
         title: '我的菜地',
